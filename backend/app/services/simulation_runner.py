@@ -1448,6 +1448,146 @@ class SimulationRunner:
         return ipc_client.check_env_alive()
 
     @classmethod
+    def interview_agents_batch_simulated(
+        cls,
+        simulation_id: str,
+        interviews: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """
+        LLM-based fallback interview when the simulation environment is not running.
+
+        Loads agent profiles from disk and uses the LLM to generate a simulated
+        response that reflects the agent's persona, memories, and background.
+
+        Args:
+            simulation_id: Simulation ID (used to locate profile files)
+            interviews: List of {"agent_id": int, "prompt": str}
+
+        Returns:
+            Same shape as SimulationRunner.interview_agents_batch:
+            {
+                "success": True,
+                "simulated": True,
+                "interviews_count": N,
+                "result": {
+                    "interviews_count": N,
+                    "results": {
+                        "reddit_0": {"agent_id": 0, "response": "...", "platform": "reddit", "simulated": True},
+                        ...
+                    }
+                }
+            }
+        """
+        import csv
+        from ..utils.llm_client import LLMClient
+
+        sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
+
+        # ── Load agent profiles ──────────────────────────────────────────────
+        profiles: List[Dict[str, Any]] = []
+
+        reddit_path = os.path.join(sim_dir, "reddit_profiles.json")
+        twitter_path = os.path.join(sim_dir, "twitter_profiles.csv")
+
+        if os.path.exists(reddit_path):
+            try:
+                with open(reddit_path, "r", encoding="utf-8") as f:
+                    profiles = json.load(f)
+                logger.info(f"[SimulatedInterview] Loaded {len(profiles)} profiles from reddit_profiles.json")
+            except Exception as e:
+                logger.warning(f"[SimulatedInterview] Failed to read reddit_profiles.json: {e}")
+
+        if not profiles and os.path.exists(twitter_path):
+            try:
+                with open(twitter_path, "r", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        profiles.append({
+                            "realname": row.get("name", ""),
+                            "username": row.get("username", ""),
+                            "bio": row.get("description", ""),
+                            "persona": row.get("user_char", ""),
+                            "profession": "Unknown",
+                        })
+                logger.info(f"[SimulatedInterview] Loaded {len(profiles)} profiles from twitter_profiles.csv")
+            except Exception as e:
+                logger.warning(f"[SimulatedInterview] Failed to read twitter_profiles.csv: {e}")
+
+        # ── Run LLM inference per agent ──────────────────────────────────────
+        llm = LLMClient()
+        results: Dict[str, Any] = {}
+
+        for item in interviews:
+            agent_id = item.get("agent_id", 0)
+            prompt = item.get("prompt", "")
+
+            # Fetch this agent's profile
+            profile: Dict[str, Any] = {}
+            if 0 <= agent_id < len(profiles):
+                profile = profiles[agent_id]
+
+            name = profile.get("realname") or profile.get("username") or f"Agent_{agent_id}"
+            bio = profile.get("bio") or profile.get("description") or ""
+            persona = profile.get("persona") or profile.get("user_char") or ""
+            profession = profile.get("profession") or ""
+            age = profile.get("age") or ""
+            location = profile.get("location") or profile.get("country") or ""
+
+            profile_parts = []
+            if profession:
+                profile_parts.append(f"Profession: {profession}")
+            if age:
+                profile_parts.append(f"Age: {age}")
+            if location:
+                profile_parts.append(f"Location: {location}")
+            if bio:
+                profile_parts.append(f"Bio: {bio}")
+            if persona:
+                profile_parts.append(f"Persona: {persona}")
+            profile_text = "\n".join(profile_parts) if profile_parts else "(No profile available)"
+
+            system_msg = (
+                f"You are roleplaying as {name}, a simulation agent with the following profile:\n"
+                f"{profile_text}\n\n"
+                "Answer the following question in first person, in natural language, "
+                "as this character would — based on their background, experiences, and personality. "
+                "Be specific and concrete. Do not use headers or JSON. "
+                "Answer in the same language as the question."
+            )
+
+            try:
+                logger.info(f"[SimulatedInterview] Generating LLM response for agent {agent_id} ({name})")
+                response_text = llm.chat(
+                    messages=[
+                        {"role": "system", "content": system_msg},
+                        {"role": "user", "content": prompt},
+                    ],
+                    temperature=0.8,
+                    max_tokens=800,
+                )
+            except Exception as e:
+                logger.error(f"[SimulatedInterview] LLM call failed for agent {agent_id}: {e}")
+                response_text = f"(Simulated response unavailable: {e})"
+
+            key = f"reddit_{agent_id}"
+            results[key] = {
+                "agent_id": agent_id,
+                "response": response_text,
+                "platform": "reddit",
+                "simulated": True,
+            }
+
+        return {
+            "success": True,
+            "simulated": True,
+            "interviews_count": len(interviews),
+            "result": {
+                "interviews_count": len(results),
+                "results": results,
+            },
+        }
+
+    @classmethod
     def get_env_status_detail(cls, simulation_id: str) -> Dict[str, Any]:
         """
         获取模拟环境的详细状态信息

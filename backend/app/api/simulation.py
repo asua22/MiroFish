@@ -2339,14 +2339,16 @@ def interview_agents_batch():
                     }
                 ), 400
 
-        # 检查环境状态
+        # 检查环境状态 — fall back to LLM simulation if OASIS is not running
         if not SimulationRunner.check_env_alive(simulation_id):
-            return jsonify(
-                {
-                    "success": False,
-                    "error": "模拟环境未运行或已关闭。请确保模拟已完成并进入等待命令模式。",
-                }
-            ), 400
+            logger.info(
+                f"Simulation env not alive for {simulation_id}, using LLM fallback"
+            )
+            result = SimulationRunner.interview_agents_batch_simulated(
+                simulation_id=simulation_id,
+                interviews=interviews,
+            )
+            return jsonify({"success": True, "data": result})
 
         # 优化每个采访项的prompt，添加前缀避免Agent调用工具
         optimized_interviews = []
