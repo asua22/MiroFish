@@ -714,7 +714,7 @@ Each time you reply, you can only do one of the following two things (cannot do 
 Option A - Call tool:
 Output your thought, then call a tool in the following format:
 <tool_call>
-{"name": "Tool Name", "parameters": {"parameter_name": "parameter_value"}}
+{{"name": "Tool Name", "parameters": {{"parameter_name": "parameter_value"}}}}
 </tool_call>
 The system will execute the tool and return the results to you. You cannot and should not write tool results yourself.
 
@@ -838,7 +838,7 @@ Prediction condition: {simulation_requirement}
 
 [Tool Call Format]
 <tool_call>
-{"name": "Tool Name", "parameters": {"parameter_name": "parameter_value"}}
+{{"name": "Tool Name", "parameters": {{"parameter_name": "parameter_value"}}}}
 </tool_call>
 
 [Answer Style]
@@ -1072,7 +1072,13 @@ class ReportAgent:
         for match in re.finditer(xml_pattern, response, re.DOTALL):
             try:
                 call_data = json.loads(match.group(1))
-                tool_calls.append(call_data)
+                # Normalize key names: "tool" → "name", "params" → "parameters"
+                if "tool" in call_data and "name" not in call_data:
+                    call_data["name"] = call_data.pop("tool")
+                if "params" in call_data and "parameters" not in call_data:
+                    call_data["parameters"] = call_data.pop("params")
+                if "name" in call_data:
+                    tool_calls.append(call_data)
             except json.JSONDecodeError:
                 pass
 
@@ -1148,10 +1154,14 @@ class ReportAgent:
         if progress_callback:
             progress_callback("planning", 0, "Analyzing simulation requirements...")
 
-        # First get simulation context
-        context = self.zep_tools.get_simulation_context(
-            graph_id=self.graph_id, simulation_requirement=self.simulation_requirement
-        )
+        # First get simulation context (may fail if Zep graph doesn't exist)
+        try:
+            context = self.zep_tools.get_simulation_context(
+                graph_id=self.graph_id, simulation_requirement=self.simulation_requirement
+            )
+        except Exception as ctx_err:
+            logger.warning(f"Could not fetch simulation context (graph may not exist in Zep): {ctx_err}")
+            context = {"graph_statistics": {}, "related_facts": [], "entities": [], "total_entities": 0}
 
         if progress_callback:
             progress_callback("planning", 30, "Generating report outline...")
@@ -1487,6 +1497,9 @@ class ReportAgent:
                             tool_name=call.get("name", call.get("tool", "Unknown")),
                             result=result,
                             tool_calls_count=tool_calls_count,
+                            max_tool_calls=self.MAX_TOOL_CALLS_PER_SECTION,
+                            used_tools_str=", ".join(used_tools) if used_tools else "none",
+                            unused_hint=unused_hint,
                         ),
                     }
                 )
@@ -1566,6 +1579,7 @@ class ReportAgent:
         self,
         progress_callback: Optional[Callable[[str, int, str], None]] = None,
         report_id: Optional[str] = None,
+        resume: bool = False,
     ) -> Report:
         """
         Generate complete report (section-by-section real-time output)
@@ -1595,14 +1609,31 @@ class ReportAgent:
             report_id = f"report_{uuid.uuid4().hex[:12]}"
         start_time = datetime.now()
 
-        report = Report(
-            report_id=report_id,
-            simulation_id=self.simulation_id,
-            graph_id=self.graph_id,
-            simulation_requirement=self.simulation_requirement,
-            status=ReportStatus.PENDING,
-            created_at=datetime.now().isoformat(),
-        )
+        # On resume: load existing report to preserve created_at etc.
+        if resume:
+            existing = ReportManager.get_report(report_id)
+            if existing:
+                report = existing
+                report.status = ReportStatus.GENERATING
+                report.error = None
+            else:
+                report = Report(
+                    report_id=report_id,
+                    simulation_id=self.simulation_id,
+                    graph_id=self.graph_id,
+                    simulation_requirement=self.simulation_requirement,
+                    status=ReportStatus.GENERATING,
+                    created_at=datetime.now().isoformat(),
+                )
+        else:
+            report = Report(
+                report_id=report_id,
+                simulation_id=self.simulation_id,
+                graph_id=self.graph_id,
+                simulation_requirement=self.simulation_requirement,
+                status=ReportStatus.PENDING,
+                created_at=datetime.now().isoformat(),
+            )
 
         # Completed section titles list (for progress tracking)
         completed_section_titles = []
@@ -1611,62 +1642,76 @@ class ReportAgent:
             # Initialize: Create report folder and save initial state
             ReportManager._ensure_report_folder(report_id)
 
-            # Initialize logger (structured log agent_log.jsonl)
+            # Loggers append to existing files naturally (mode="a")
             self.report_logger = ReportLogger(report_id)
-            self.report_logger.log_start(
-                simulation_id=self.simulation_id,
-                graph_id=self.graph_id,
-                simulation_requirement=self.simulation_requirement,
-            )
-
-            # Initialize console logger (console_log.txt)
             self.console_logger = ReportConsoleLogger(report_id)
 
-            ReportManager.update_progress(
-                report_id, "pending", 0, "Initializing report...", completed_sections=[]
-            )
-            ReportManager.save_report(report)
-
-            # Phase 1: Plan outline
-            report.status = ReportStatus.PLANNING
-            ReportManager.update_progress(
-                report_id,
-                "planning",
-                5,
-                "Starting to plan report outline...",
-                completed_sections=[],
-            )
-
-            # Log planning start
-            self.report_logger.log_planning_start()
-
-            if progress_callback:
-                progress_callback("planning", 0, "Starting to plan report outline...")
-
-            outline = self.plan_outline(
-                progress_callback=lambda stage, prog, msg: (
-                    progress_callback(stage, prog // 5, msg)
-                    if progress_callback
-                    else None
+            if resume:
+                # Log resume event (appends to existing agent_log.jsonl)
+                self.report_logger.log(
+                    action="resume_start",
+                    stage="generating",
+                    details={"message": "Resuming report generation from last checkpoint"},
                 )
-            )
-            report.outline = outline
+                logger.info(f"Resuming report: {report_id}")
 
-            # Log planning complete
-            self.report_logger.log_planning_complete(outline.to_dict())
+                # Load existing outline — no planning needed
+                outline = ReportManager.load_outline(report_id)
+                if not outline:
+                    raise ValueError(
+                        f"Cannot resume report {report_id}: outline.json not found. "
+                        "Please generate a new report."
+                    )
+                report.outline = outline
+                logger.info(f"Loaded outline: {len(outline.sections)} sections")
+            else:
+                self.report_logger.log_start(
+                    simulation_id=self.simulation_id,
+                    graph_id=self.graph_id,
+                    simulation_requirement=self.simulation_requirement,
+                )
 
-            # Save outline to file
-            ReportManager.save_outline(report_id, outline)
-            ReportManager.update_progress(
-                report_id,
-                "planning",
-                15,
-                f"Outline planning complete, {len(outline.sections)} sections",
-                completed_sections=[],
-            )
-            ReportManager.save_report(report)
+                ReportManager.update_progress(
+                    report_id, "pending", 0, "Initializing report...", completed_sections=[]
+                )
+                ReportManager.save_report(report)
 
-            logger.info(f"Outline saved to file: {report_id}/outline.json")
+                # Phase 1: Plan outline
+                report.status = ReportStatus.PLANNING
+                ReportManager.update_progress(
+                    report_id,
+                    "planning",
+                    5,
+                    "Starting to plan report outline...",
+                    completed_sections=[],
+                )
+
+                self.report_logger.log_planning_start()
+
+                if progress_callback:
+                    progress_callback("planning", 0, "Starting to plan report outline...")
+
+                outline = self.plan_outline(
+                    progress_callback=lambda stage, prog, msg: (
+                        progress_callback(stage, prog // 5, msg)
+                        if progress_callback
+                        else None
+                    )
+                )
+                report.outline = outline
+
+                self.report_logger.log_planning_complete(outline.to_dict())
+
+                ReportManager.save_outline(report_id, outline)
+                ReportManager.update_progress(
+                    report_id,
+                    "planning",
+                    15,
+                    f"Outline planning complete, {len(outline.sections)} sections",
+                    completed_sections=[],
+                )
+                ReportManager.save_report(report)
+                logger.info(f"Outline saved to file: {report_id}/outline.json")
 
             # Phase 2: Generate section by section (save each section)
             report.status = ReportStatus.GENERATING
@@ -1676,7 +1721,17 @@ class ReportAgent:
 
             for i, section in enumerate(outline.sections):
                 section_num = i + 1
+                section_path = ReportManager._get_section_path(report_id, section_num)
                 base_progress = 20 + int((i / total_sections) * 70)
+
+                # On resume: skip already saved sections, load their content for context
+                if resume and os.path.exists(section_path):
+                    with open(section_path, "r", encoding="utf-8") as f:
+                        existing_content = f.read()
+                    generated_sections.append(existing_content)
+                    completed_section_titles.append(section.title)
+                    logger.info(f"Skipping already completed section {section_num}: {section.title}")
+                    continue
 
                 # Update progress
                 ReportManager.update_progress(
@@ -1790,7 +1845,8 @@ class ReportAgent:
             return report
 
         except Exception as e:
-            logger.error(f"Report generation failed: {str(e)}")
+            import traceback
+            logger.error(f"Report generation failed: {str(e)}\n{traceback.format_exc()}")
             report.status = ReportStatus.FAILED
             report.error = str(e)
 
@@ -1900,10 +1956,11 @@ class ReportAgent:
             for call in tool_calls[:1]:  # Max 1 tool call per round
                 if len(tool_calls_made) >= self.MAX_TOOL_CALLS_PER_CHAT:
                     break
-                result = self._execute_tool(call["name"], call.get("parameters", {}))
+                tool_name_c = call.get("name") or call.get("tool", "Unknown")
+                result = self._execute_tool(tool_name_c, call.get("parameters", {}))
                 tool_results.append(
                     {
-                        "tool": call["name"],
+                        "tool": tool_name_c,
                         "result": result[:1500],  # Limit result length
                     }
                 )
@@ -2123,6 +2180,24 @@ class ReportManager:
         """
         result = cls.get_agent_log(report_id, from_line=0)
         return result["logs"]
+
+    @classmethod
+    def load_outline(cls, report_id: str) -> Optional[ReportOutline]:
+        """Load outline from outline.json, returns None if not found"""
+        path = cls._get_outline_path(report_id)
+        if not os.path.exists(path):
+            return None
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        sections = [
+            ReportSection(title=s["title"], content=s.get("content", ""))
+            for s in data.get("sections", [])
+        ]
+        return ReportOutline(
+            title=data["title"],
+            summary=data["summary"],
+            sections=sections,
+        )
 
     @classmethod
     def save_outline(cls, report_id: str, outline: ReportOutline) -> None:

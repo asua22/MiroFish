@@ -436,6 +436,86 @@ def download_report(report_id: str):
         }), 500
 
 
+@report_bp.route('/<report_id>/resume', methods=['POST'])
+def resume_report(report_id: str):
+    """
+    Resume a failed report from where it stopped.
+    Reuses the existing outline and skips already-generated sections.
+    """
+    try:
+        report = ReportManager.get_report(report_id)
+        if not report:
+            return jsonify({"success": False, "error": f"Report not found: {report_id}"}), 404
+
+        if report.status == ReportStatus.COMPLETED:
+            return jsonify({"success": False, "error": "Report is already completed"}), 400
+
+        # If outline.json doesn't exist, the report failed during planning —
+        # fall back to a full re-run (resume=False) using the same report_id
+        outline = ReportManager.load_outline(report_id)
+        can_resume = outline is not None
+
+        # Get simulation info to rebuild the agent
+        manager = SimulationManager()
+        state = manager.get_simulation(report.simulation_id)
+        if not state:
+            return jsonify({"success": False, "error": f"Simulation not found: {report.simulation_id}"}), 404
+
+        project = ProjectManager.get_project(state.project_id)
+        simulation_requirement = (project.simulation_requirement if project else None) or ""
+
+        task_manager = TaskManager()
+        task_id = task_manager.create_task(
+            task_type="report_resume",
+            metadata={"report_id": report_id, "simulation_id": report.simulation_id}
+        )
+
+        def run_resume():
+            try:
+                mode = "Resuming" if can_resume else "Restarting"
+                task_manager.update_task(task_id, status=TaskStatus.PROCESSING, progress=0, message=f"{mode} report...")
+                agent = ReportAgent(
+                    graph_id=report.graph_id,
+                    simulation_id=report.simulation_id,
+                    simulation_requirement=simulation_requirement,
+                )
+
+                def progress_callback(stage, progress, message):
+                    task_manager.update_task(task_id, progress=progress, message=f"[{stage}] {message}")
+
+                result = agent.generate_report(
+                    progress_callback=progress_callback,
+                    report_id=report_id,
+                    resume=can_resume,
+                )
+                ReportManager.save_report(result)
+                if result.status == ReportStatus.COMPLETED:
+                    task_manager.complete_task(task_id, result={"report_id": report_id, "status": "completed"})
+                else:
+                    task_manager.fail_task(task_id, result.error or "Resume failed")
+            except Exception as e:
+                logger.error(f"Resume report failed: {str(e)}")
+                task_manager.fail_task(task_id, str(e))
+
+        thread = threading.Thread(target=run_resume, daemon=True)
+        thread.start()
+
+        return jsonify({
+            "success": True,
+            "data": {
+                "report_id": report_id,
+                "task_id": task_id,
+                "status": "resuming",
+                "can_resume": can_resume,
+                "message": "Resuming from checkpoint" if can_resume else "Restarting from scratch (no outline found)",
+            }
+        })
+
+    except Exception as e:
+        logger.error(f"Failed to start resume: {str(e)}")
+        return jsonify({"success": False, "error": str(e), "traceback": traceback.format_exc()}), 500
+
+
 @report_bp.route('/<report_id>', methods=['DELETE'])
 def delete_report(report_id: str):
     """删除报告"""

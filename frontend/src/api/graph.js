@@ -64,3 +64,15 @@ export function getProject(projectId) {
     method: 'get'
   })
 }
+
+/**
+ * Reset project status (clears graph_id so graph can be rebuilt)
+ * @param {String} projectId - Project ID
+ * @returns {Promise}
+ */
+export function resetProject(projectId) {
+  return service({
+    url: `/api/graph/project/${projectId}/reset`,
+    method: 'post'
+  })
+}

@@ -136,6 +136,18 @@
             </svg>
           </button>
 
+          <!-- Resume Button - show on error -->
+          <button v-if="isFailed && !isComplete" class="resume-btn" @click="handleResume" :disabled="isResuming">
+            <svg v-if="isResuming" class="spin-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 .49-4.56"/>
+            </svg>
+            <span>{{ isResuming ? 'Resuming...' : 'Resume Report' }}</span>
+          </button>
+
           <div class="workflow-divider"></div>
         </div>
 
@@ -392,7 +404,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAgentLog, getConsoleLog } from '../api/report'
+import { getAgentLog, getConsoleLog, resumeReport } from '../api/report'
 
 const router = useRouter()
 
@@ -411,6 +423,22 @@ const goToInteraction = () => {
   }
 }
 
+const handleResume = async () => {
+  if (!props.reportId || isResuming.value) return
+  isResuming.value = true
+  isFailed.value = false
+  try {
+    await resumeReport(props.reportId)
+    // Resume started — restart polling to pick up new log entries
+    agentLogLine.value = agentLogs.value.length  // continue from where we left off
+    startPolling()
+  } catch (err) {
+    console.error('Failed to resume report:', err)
+    isFailed.value = true
+    isResuming.value = false
+  }
+}
+
 // State
 const agentLogs = ref([])
 const consoleLogs = ref([])
@@ -423,6 +451,8 @@ const expandedContent = ref(new Set())
 const expandedLogs = ref(new Set())
 const collapsedSections = ref(new Set())
 const isComplete = ref(false)
+const isFailed = ref(false)
+const isResuming = ref(false)
 const startTime = ref(null)
 const leftPanel = ref(null)
 const rightPanel = ref(null)
@@ -2049,10 +2079,22 @@ const fetchAgentLog = async () => {
           
           if (log.action === 'report_complete') {
             isComplete.value = true
+            isFailed.value = false
             currentSectionIndex.value = null  // Ensure loading state is cleared
             emit('update-status', 'completed')
             stopPolling()
             // Scroll logic is handled in nextTick after loop
+          }
+
+          if (log.action === 'error') {
+            isFailed.value = true
+            currentSectionIndex.value = null
+            stopPolling()
+          }
+
+          if (log.action === 'resume_start') {
+            isFailed.value = false
+            isResuming.value = false
           }
           
           if (log.action === 'report_start') {
@@ -2195,8 +2237,10 @@ watch(() => props.reportId, (newId) => {
     expandedLogs.value = new Set()
     collapsedSections.value = new Set()
     isComplete.value = false
+    isFailed.value = false
+    isResuming.value = false
     startTime.value = null
-    
+
     startPolling()
   }
 }, { immediate: true })
@@ -3425,6 +3469,42 @@ watch(() => props.reportId, (newId) => {
 
 .next-step-btn:hover svg {
   transform: translateX(4px);
+}
+
+.resume-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 40px);
+  margin: 4px 20px 0 20px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: #DC2626;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resume-btn:hover:not(:disabled) {
+  background: #B91C1C;
+}
+
+.resume-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Workflow Empty */

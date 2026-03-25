@@ -43,6 +43,14 @@ export const getReport = (reportId) => {
 }
 
 /**
+ * Resume a failed report from the last checkpoint
+ * @param {string} reportId
+ */
+export const resumeReport = (reportId) => {
+  return service.post(`/api/report/${reportId}/resume`)
+}
+
+/**
  * Chat with Report Agent
  * @param {Object} data - { simulation_id, message, chat_history? }
  */

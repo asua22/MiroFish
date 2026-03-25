@@ -355,6 +355,15 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Rebuild button: visible when graph is complete or errored -->
+              <div class="detail-section" v-if="currentPhase >= 2 || (currentPhase > 0 && error)">
+                <button class="rebuild-btn" @click="rebuildGraph" :disabled="isRebuilding">
+                  <span v-if="isRebuilding" class="spin-icon">↻</span>
+                  <span v-else>↺</span>
+                  {{ isRebuilding ? 'Rebuilding...' : 'Rebuild Graph' }}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -414,7 +423,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData } from '../api/graph'
+import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData, resetProject } from '../api/graph'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
 import * as d3 from 'd3'
 
@@ -435,6 +444,7 @@ const ontologyProgress = ref(null) // Ontology Generation progress
 const currentPhase = ref(-1) // -1: uploading, 0: Ontology Generation, 1: Graph Build, 2: complete
 const selectedItem = ref(null) // Selected node or edge
 const isFullScreen = ref(false)
+const isRebuilding = ref(false)
 
 // DOM refs
 const graphContainer = ref(null)
@@ -730,6 +740,25 @@ const refreshGraph = async () => {
   graphLoading.value = true
   await fetchGraphData()
   graphLoading.value = false
+}
+
+// Rebuild Graph (reset project status then re-run build)
+const rebuildGraph = async () => {
+  if (isRebuilding.value) return
+  isRebuilding.value = true
+  error.value = ''
+  graphData.value = null
+  buildProgress.value = null
+
+  try {
+    await resetProject(currentProjectId.value)
+    currentPhase.value = 1
+    await startBuildGraph()
+  } catch (err) {
+    error.value = 'Failed to rebuild graph: ' + (err.message || 'Unknown error')
+  } finally {
+    isRebuilding.value = false
+  }
 }
 
 // Stop graph data polling
@@ -2032,6 +2061,42 @@ onUnmounted(() => {
 
 .btn-arrow {
   font-size: 1.2rem;
+}
+
+.rebuild-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  color: #FF6B35;
+  border: 1px solid #FF6B35;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.rebuild-btn:hover:not(:disabled) {
+  background: #FF6B35;
+  color: #fff;
+}
+
+.rebuild-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spin-icon {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Project Info panel */
