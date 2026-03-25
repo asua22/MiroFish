@@ -1,7 +1,7 @@
-"""Zep Graph 分页读取工具。
+"""Zep Graph paging reading tool.
 
-Zep 的 node/edge 列表接口使用 UUID cursor 分页，
-本模块封装自动翻页逻辑（含单页重试），对调用方透明地返回完整列表。
+Zep node/edge list API uses UUID cursor pagination,
+This module encapsulates auto-pagination logic (including single-page retry), transparently returning the full list to the caller.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ from collections.abc import Callable
 from typing import Any
 
 from zep_cloud import InternalServerError
+from zep_cloud.core.api_error import ApiError
 from zep_cloud.client import Zep
 
 from .logger import get_logger
@@ -31,7 +32,7 @@ def _fetch_page_with_retry(
     page_description: str = "page",
     **kwargs: Any,
 ) -> list[Any]:
-    """单页请求，失败时指数退避重试。仅重试网络/IO类瞬态错误。"""
+    """Single page request, exponential backoff retry on failure. Only retries network/IO transient errors."""
     if max_retries < 1:
         raise ValueError("max_retries must be >= 1")
 
@@ -41,6 +42,19 @@ def _fetch_page_with_retry(
     for attempt in range(max_retries):
         try:
             return api_call(*args, **kwargs)
+        except ApiError as e:
+            # Check for specific API errors
+            status_code = getattr(e, "status_code", None)
+            if status_code == 403:
+                logger.error(f"Zep {page_description} failed (403 Forbidden): {str(e)}. This usually means the API quota has been exceeded.")
+                raise e
+            elif status_code == 429:
+                logger.error(f"Zep {page_description} failed (429 Too Many Requests): {str(e)}. Rate limit exceeded.")
+                raise e
+            
+            # For other ApiErrors, treat as terminal
+            logger.error(f"Zep {page_description} failed with ApiError: {str(e)}")
+            raise e
         except (ConnectionError, TimeoutError, OSError, InternalServerError) as e:
             last_exception = e
             if attempt < max_retries - 1:
@@ -64,7 +78,7 @@ def fetch_all_nodes(
     max_retries: int = _DEFAULT_MAX_RETRIES,
     retry_delay: float = _DEFAULT_RETRY_DELAY,
 ) -> list[Any]:
-    """分页获取图谱节点，最多返回 max_items 条（默认 2000）。每页请求自带重试。"""
+    """Page fetch graph nodes, max return max_items (default 2000). Built-in retry per page."""
     all_nodes: list[Any] = []
     cursor: str | None = None
     page_num = 0
@@ -109,7 +123,7 @@ def fetch_all_edges(
     max_retries: int = _DEFAULT_MAX_RETRIES,
     retry_delay: float = _DEFAULT_RETRY_DELAY,
 ) -> list[Any]:
-    """分页获取图谱所有边，返回完整列表。每页请求自带重试。"""
+    """Page fetch all graph edges, returns full list. Built-in retry per page."""
     all_edges: list[Any] = []
     cursor: str | None = None
     page_num = 0

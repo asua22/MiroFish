@@ -1,14 +1,21 @@
 services:
   mirofish:
-    image: ghcr.io/666ghj/mirofish:latest
-    # 加速镜像（如拉取缓慢可替换上方地址）
-    # image: ghcr.nju.edu.cn/666ghj/mirofish:latest
+    build: .
     container_name: mirofish
-    env_file:
-      - .env
     ports:
       - "3000:3000"
       - "5001:5001"
     restart: unless-stopped
     volumes:
+      # ESTO ES MAGIA: Sincroniza tu carpeta real con la de Docker
+      # Si cambias un texto en tu escritorio, se cambia en la web al instante
+      - ./frontend:/app/frontend
+      - ./backend:/app/backend
       - ./backend/uploads:/app/backend/uploads
+    environment:
+      - LLM_API_KEY=ollama
+      - LLM_BASE_URL=http://host.docker.internal:11434/v1
+      - LLM_MODEL_NAME=mistral-nemo
+      - ZEP_API_KEY=z_1dWlkIjoiM2I2NmM3NmItNWU3OC00MTRiLTgxMjEtMzk1ZTlkM2ZkMGI0In0.CHpj6OCYQcVwVDMqj5fkjx8LT7ZU_mw_1S6nUpBTivdKpfnrK96zTk81WqV8y_qb1duWhI56jKOgkvM7_lO_YA
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

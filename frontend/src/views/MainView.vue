@@ -15,7 +15,7 @@
             :class="{ active: viewMode === mode }"
             @click="viewMode = mode"
           >
-            {{ { graph: '图谱', split: '双栏', workbench: '工作台' }[mode] }}
+            {{ { graph: 'Graph', split: 'Split', workbench: 'Workbench' }[mode] }}
           </button>
         </div>
       </div>
@@ -48,7 +48,7 @@
 
       <!-- Right Panel: Step Components -->
       <div class="panel-wrapper right" :style="rightPanelStyle">
-        <!-- Step 1: 图谱构建 -->
+        <!-- Step 1: Graph Build -->
         <Step1GraphBuild 
           v-if="currentStep === 1"
           :currentPhase="currentPhase"
@@ -59,7 +59,7 @@
           :systemLogs="systemLogs"
           @next-step="handleNextStep"
         />
-        <!-- Step 2: 环境搭建 -->
+        <!-- Step 2: Environment Setup -->
         <Step2EnvSetup
           v-else-if="currentStep === 2"
           :projectData="projectData"
@@ -90,8 +90,8 @@ const router = useRouter()
 const viewMode = ref('split') // graph | split | workbench
 
 // Step State
-const currentStep = ref(1) // 1: 图谱构建, 2: 环境搭建, 3: 开始模拟, 4: 报告生成, 5: 深度互动
-const stepNames = ['图谱构建', '环境搭建', '开始模拟', '报告生成', '深度互动']
+const currentStep = ref(1) // 1: Graph Build, 2: Environment Setup, 3: Start Simulation, 4: Report Generation, 5: Deep Interaction
+const stepNames = ['Graph Build', 'Environment Setup', 'Start Simulation', 'Report Generation', 'Deep Interaction']
 
 // Data State
 const currentProjectId = ref(route.params.projectId)
@@ -108,6 +108,7 @@ const systemLogs = ref([])
 // Polling timers
 let pollTimer = null
 let graphPollTimer = null
+let graphRetryTimeout = null
 
 // --- Computed Layout Styles ---
 const leftPanelStyle = computed(() => {
@@ -159,11 +160,11 @@ const toggleMaximize = (target) => {
 const handleNextStep = (params = {}) => {
   if (currentStep.value < 5) {
     currentStep.value++
-    addLog(`进入 Step ${currentStep.value}: ${stepNames[currentStep.value - 1]}`)
+    addLog(`Entering Step ${currentStep.value}: ${stepNames[currentStep.value - 1]}`)
     
-    // 如果是从 Step 2 进入 Step 3，记录模拟轮数配置
+    // If entered Step 3 from Step 2, record Simulation rounds config
     if (currentStep.value === 3 && params.maxRounds) {
-      addLog(`自定义模拟轮数: ${params.maxRounds} 轮`)
+      addLog(`Custom simulation  rounds: ${params.maxRounds}  rounds`)
     }
   }
 }
@@ -171,7 +172,7 @@ const handleNextStep = (params = {}) => {
 const handleGoBack = () => {
   if (currentStep.value > 1) {
     currentStep.value--
-    addLog(`返回 Step ${currentStep.value}: ${stepNames[currentStep.value - 1]}`)
+    addLog(`Back to Step ${currentStep.value}: ${stepNames[currentStep.value - 1]}`)
   }
 }
 
@@ -290,30 +291,74 @@ const startBuildGraph = async () => {
 }
 
 const startGraphPolling = () => {
+  stopGraphPolling()
   addLog('Started polling for graph data...')
   fetchGraphData()
   graphPollTimer = setInterval(fetchGraphData, 10000)
 }
 
 const fetchGraphData = async () => {
+  if (error.value && error.value.includes('quota')) {
+    stopGraphPolling()
+    return
+  }
+  
   try {
-    // Refresh project info to check for graph_id
+    // Refresh project info to check for status and graph_id
     const projRes = await getProject(currentProjectId.value)
-    if (projRes.success && projRes.data.graph_id) {
-      const gRes = await getGraphData(projRes.data.graph_id)
-      if (gRes.success) {
-        graphData.value = gRes.data
-        const nodeCount = gRes.data.node_count || gRes.data.nodes?.length || 0
-        const edgeCount = gRes.data.edge_count || gRes.data.edges?.length || 0
-        addLog(`Graph data refreshed. Nodes: ${nodeCount}, Edges: ${edgeCount}`)
+    if (projRes.success) {
+      projectData.value = projRes.data
+      
+      if (projRes.data.status === 'failed') {
+        addLog(`Project failed: ${projRes.data.error || 'Unknown error'}`)
+        stopGraphPolling()
+        error.value = projRes.data.error || 'Project failed'
+        return
+      }
+
+      if (projRes.data.graph_id) {
+        const gRes = await getGraphData(projRes.data.graph_id)
+        if (gRes.success) {
+          graphData.value = gRes.data
+          const nodeCount = gRes.data.node_count || gRes.data.nodes?.length || 0
+          const edgeCount = gRes.data.edge_count || gRes.data.edges?.length || 0
+          addLog(`Graph data refreshed. Nodes: ${nodeCount}, Edges: ${edgeCount}`)
+          
+          // Clear any previous rate limit error if we succeeded
+          if (error.value && error.value.includes('Rate limit')) {
+            error.value = ''
+          }
+        }
       }
     }
   } catch (err) {
-    console.warn('Graph fetch error:', err)
+    const statusCode = err.response?.status
+    
+    if (statusCode === 403) {
+      addLog('Error: Zep Quota limit reached. Stopping polling.')
+      error.value = 'Zep API quota limit reached.'
+      stopPolling()
+      stopGraphPolling()
+    } else if (statusCode === 429) {
+      addLog('Warning: Zep Rate limit reached. Pausing graph polling for 60s.')
+      stopGraphPolling()
+      error.value = 'Zep Rate limit reached. Updates paused for 60s.'
+      
+      if (graphRetryTimeout) clearTimeout(graphRetryTimeout)
+      graphRetryTimeout = setTimeout(() => {
+        if (projectData.value?.status !== 'failed' && !error.value.includes('quota')) {
+           error.value = ''
+           startGraphPolling()
+        }
+      }, 60000)
+    } else {
+      console.warn('Graph fetch error:', err)
+    }
   }
 }
 
 const startPollingTask = (taskId) => {
+  stopPolling()
   pollTaskStatus(taskId)
   pollTimer = setInterval(() => pollTaskStatus(taskId), 2000)
 }
@@ -345,6 +390,7 @@ const pollTaskStatus = async (taskId) => {
         }
       } else if (task.status === 'failed') {
         stopPolling()
+        stopGraphPolling()
         error.value = task.error
         addLog(`Graph build task failed: ${task.error}`)
       }
@@ -401,6 +447,7 @@ onMounted(() => {
 onUnmounted(() => {
   stopPolling()
   stopGraphPolling()
+  if (graphRetryTimeout) clearTimeout(graphRetryTimeout)
 })
 </script>
 
