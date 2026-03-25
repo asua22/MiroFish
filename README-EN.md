@@ -195,9 +195,66 @@ MiroFish's simulation engine is powered by **[OASIS (Open Agent Social Interacti
 ## 📈 Project Statistics
 
 <a href="https://www.star-history.com/#666ghj/MiroFish&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&legend=top-left" />
- </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&theme=dark&legend=top-left" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&legend=top-left" />
+  </picture>
 </a>
+
+## 🔧 How to Recreate the Project from Scratch
+
+If you have deleted the project locally and want to rebuild it from the GitHub repository, follow these steps:
+
+### Prerequisites
+
+Make sure you have installed:
+- **Node.js** (version 18+)
+- **Python** (version ≥3.11, ≤3.12)
+- **uv** (latest version) - Python package manager
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/666ghj/MiroFish.git
+cd MiroFish
+```
+
+### Step 2: Configure Environment Variables
+
+```bash
+cp .env.example .env
+# Edit .env and add your API keys
+```
+
+### Step 3: Install Dependencies
+
+```bash
+# Install all dependencies (backend + frontend)
+npm run setup:all
+```
+
+Or step by step:
+
+```bash
+# Install Node dependencies
+npm run setup
+
+# Install Python dependencies (creates virtual environment automatically)
+npm run setup:backend
+```
+
+### Step 4: Start the Project
+
+```bash
+# Start both frontend and backend
+npm run dev
+```
+
+The services will be available at:
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:5001`
+
+---
+
+> **Note:** The project does not include large dependencies (like Python virtual environment or node_modules) in the repository. These are automatically installed during Step 3 using `requirements.txt` and `package.json`.
