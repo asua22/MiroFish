@@ -24,9 +24,9 @@ from .zep_entity_reader import EntityNode, ZepEntityReader
 
 logger = get_logger("mirofish.simulation_config")
 
-# 中国作息时间配置（已废弃，改为动态检测）
+# China timezone configuration (deprecated, switched to dynamic detection)
 # CHINA_TIMEZONE_CONFIG = {
-#     # ... (省略)
+#     # ... (omitted)
 # }
 
 
@@ -997,8 +997,8 @@ Return JSON format (no markdown):
     def _parse_time_config(
         self, result: Dict[str, Any], num_entities: int
     ) -> TimeSimulationConfig:
-        """解析时间配置结果，并验证agents_per_hour值不超过总agent数"""
-        # 获取原始值
+        """Parses time configuration result and validates agents_per_hour values not exceeding total agent count"""
+        # Get raw values
         agents_per_hour_min = result.get(
             "agents_per_hour_min", max(1, num_entities // 15)
         )
@@ -1006,7 +1006,7 @@ Return JSON format (no markdown):
             "agents_per_hour_max", max(5, num_entities // 5)
         )
 
-        # 验证并修正：确保不超过总agent数
+        # Validate and fix: ensure not exceeding total agent count
         if agents_per_hour_min > num_entities:
             logger.warning(
                 f"agents_per_hour_min ({agents_per_hour_min}) exceeds total Agent count ({num_entities}), fixed"
@@ -1019,21 +1019,23 @@ Return JSON format (no markdown):
             )
             agents_per_hour_max = max(agents_per_hour_min + 1, num_entities // 2)
 
-        # 确保 min < max
+        # Ensure min < max
         if agents_per_hour_min >= agents_per_hour_max:
             agents_per_hour_min = max(1, agents_per_hour_max // 2)
             logger.warning(
-                f"agents_per_hour_min >= max，已修正为 {agents_per_hour_min}"
+                f"agents_per_hour_min >= max, fixed to {agents_per_hour_min}"
             )
 
         return TimeSimulationConfig(
             total_simulation_hours=result.get("total_simulation_hours", 72),
-            minutes_per_round=result.get("minutes_per_round", 60),  # 默认每轮1小时
+            minutes_per_round=result.get(
+                "minutes_per_round", 60
+            ),  # Default 1 hour per round
             agents_per_hour_min=agents_per_hour_min,
             agents_per_hour_max=agents_per_hour_max,
             peak_hours=result.get("peak_hours", [19, 20, 21, 22]),
             off_peak_hours=result.get("off_peak_hours", [0, 1, 2, 3, 4, 5]),
-            off_peak_activity_multiplier=0.05,  # 凌晨几乎无人
+            off_peak_activity_multiplier=0.05,  # Almost no activity at night
             morning_hours=result.get("morning_hours", [6, 7, 8]),
             morning_activity_multiplier=0.4,
             work_hours=result.get("work_hours", list(range(9, 19))),
@@ -1044,14 +1046,14 @@ Return JSON format (no markdown):
     def _generate_event_config(
         self, context: str, simulation_requirement: str, entities: List[EntityNode]
     ) -> Dict[str, Any]:
-        """生成事件配置"""
+        """Generates event configuration"""
 
-        # 获取可用的实体类型列表，供 LLM 参考
+        # Get available entity type list for LLM reference
         entity_types_available = list(
             set(e.get_entity_type() or "Unknown" for e in entities)
         )
 
-        # 为每种类型列出代表性实体名称
+        # List representative entity names for each type
         type_examples = {}
         for e in entities:
             etype = e.get_entity_type() or "Unknown"
@@ -1064,53 +1066,53 @@ Return JSON format (no markdown):
             [f"- {t}: {', '.join(examples)}" for t, examples in type_examples.items()]
         )
 
-        # 使用配置的上下文截断长度
+        # Use configured context truncation length
         context_truncated = context[: self.EVENT_CONFIG_CONTEXT_LENGTH]
 
-        prompt = f"""基于以下模拟需求，生成事件配置。
+        prompt = f"""Based on the following simulation requirements, generate event configuration.
 
-模拟需求: {simulation_requirement}
+Simulation requirements: {simulation_requirement}
 
 {context_truncated}
 
-## 可用实体类型及示例
+## Available entity types and examples
 {type_info}
 
-## 任务
-请生成事件配置JSON：
-- 提取热点话题关键词
-- 描述舆论发展方向
-- 设计初始帖子内容，**每个帖子必须指定 poster_type（发布者类型）**
+## Task
+Generate event configuration JSON:
+- Extract hot topic keywords
+- Describe public opinion development direction
+- Design initial post content, **every post must specify poster_type (publisher type)**
 
-**重要**: poster_type 必须从上面的"可用实体类型"中选择，这样初始帖子才能分配给合适的 Agent 发布。
-例如：官方声明应由 Official/University 类型发布，新闻由 MediaOutlet 发布，学生观点由 Student 发布。
+**Important**: poster_type must be selected from the "Available entity types" above, so that the initial post can be assigned to the appropriate Agent.
+Example: Official statements should be published by Official/University type, news by MediaOutlet, student opinions by Student.
 
-返回JSON格式（不要markdown）：
+Return JSON format (no markdown):
 {{
-    "hot_topics": ["关键词1", "关键词2", ...],
-    "narrative_direction": "<舆论发展方向描述>",
+    "hot_topics": ["Keyword1", "Keyword2", ...],
+    "narrative_direction": "<description of public opinion development>",
     "initial_posts": [
-        {{"content": "帖子内容", "poster_type": "实体类型（必须从可用类型中选择）"}},
+        {{"content": "Post content", "poster_type": "Entity type (must match available types)"}},
         ...
     ],
-    "reasoning": "<简要说明>"
+    "reasoning": "<brief explanation>"
 }}"""
 
-        system_prompt = "你是舆论分析专家。返回纯JSON格式。注意 poster_type 必须精确匹配可用实体类型。"
+        system_prompt = "You are a public opinion analysis expert. Return pure JSON. Note poster_type must accurately match available entity types."
 
         try:
             return self._call_llm_with_retry(prompt, system_prompt)
         except Exception as e:
-            logger.warning(f"事件配置LLM生成失败: {e}, 使用默认配置")
+            logger.warning(f"Event config LLM generation failed: {e}, using default")
             return {
                 "hot_topics": [],
                 "narrative_direction": "",
                 "initial_posts": [],
-                "reasoning": "使用默认配置",
+                "reasoning": "Using default configuration",
             }
 
     def _parse_event_config(self, result: Dict[str, Any]) -> EventConfig:
-        """解析事件配置结果"""
+        """Parses event configuration result"""
         return EventConfig(
             initial_posts=result.get("initial_posts", []),
             scheduled_events=[],
@@ -1122,14 +1124,14 @@ Return JSON format (no markdown):
         self, event_config: EventConfig, agent_configs: List[AgentActivityConfig]
     ) -> EventConfig:
         """
-        为初始帖子分配合适的发布者 Agent
+        Assigns appropriate publisher Agent to initial posts
 
-        根据每个帖子的 poster_type 匹配最合适的 agent_id
+        Matches most suitable agent_id based on each post's poster_type
         """
         if not event_config.initial_posts:
             return event_config
 
-        # 按实体类型建立 agent 索引
+        # Build agent index by entity type
         agents_by_type: Dict[str, List[AgentActivityConfig]] = {}
         for agent in agent_configs:
             etype = agent.entity_type.lower()
@@ -1137,7 +1139,7 @@ Return JSON format (no markdown):
                 agents_by_type[etype] = []
             agents_by_type[etype].append(agent)
 
-        # 类型映射表（处理 LLM 可能输出的不同格式）
+        # Type alias mapping (handles different formats LLM might output)
         type_aliases = {
             "official": ["official", "university", "governmentagency", "government"],
             "university": ["university", "official"],
@@ -1149,7 +1151,7 @@ Return JSON format (no markdown):
             "person": ["person", "student", "alumni"],
         }
 
-        # 记录每种类型已使用的 agent 索引，避免重复使用同一个 agent
+        # Track used agent index per type to avoid reusing the same agent
         used_indices: Dict[str, int] = {}
 
         updated_posts = []
@@ -1157,17 +1159,17 @@ Return JSON format (no markdown):
             poster_type = post.get("poster_type", "").lower()
             content = post.get("content", "")
 
-            # 尝试找到匹配的 agent
+            # Attempt to find matching agent
             matched_agent_id = None
 
-            # 1. 直接匹配
+            # 1. Direct match
             if poster_type in agents_by_type:
                 agents = agents_by_type[poster_type]
                 idx = used_indices.get(poster_type, 0) % len(agents)
                 matched_agent_id = agents[idx].agent_id
                 used_indices[poster_type] = idx + 1
             else:
-                # 2. 使用别名匹配
+                # 2. Match using aliases
                 for alias_key, aliases in type_aliases.items():
                     if poster_type in aliases or alias_key == poster_type:
                         for alias in aliases:
@@ -1180,13 +1182,13 @@ Return JSON format (no markdown):
                     if matched_agent_id is not None:
                         break
 
-            # 3. 如果仍未找到，使用影响力最高的 agent
+            # 3. If still not found, use highest influence agent
             if matched_agent_id is None:
                 logger.warning(
-                    f"未找到类型 '{poster_type}' 的匹配 Agent，使用影响力最高的 Agent"
+                    f"No matching Agent found for type '{poster_type}', using highest influence Agent"
                 )
                 if agent_configs:
-                    # 按影响力排序，选择影响力最高的
+                    # Sort by influence and select highest
                     sorted_agents = sorted(
                         agent_configs, key=lambda a: a.influence_weight, reverse=True
                     )
@@ -1203,7 +1205,7 @@ Return JSON format (no markdown):
             )
 
             logger.info(
-                f"初始帖子分配: poster_type='{poster_type}' -> agent_id={matched_agent_id}"
+                f"Initial post assignment: poster_type='{poster_type}' -> agent_id={matched_agent_id}"
             )
 
         event_config.initial_posts = updated_posts
@@ -1216,9 +1218,9 @@ Return JSON format (no markdown):
         start_idx: int,
         simulation_requirement: str,
     ) -> List[AgentActivityConfig]:
-        """分批生成Agent配置"""
+        """Generates agent configuration in batches"""
 
-        # 构建实体信息（使用配置的摘要长度）
+        # Build entity info (using configured summary length)
         entity_list = []
         summary_len = self.AGENT_SUMMARY_LENGTH
         for i, e in enumerate(entities):
@@ -1231,45 +1233,43 @@ Return JSON format (no markdown):
                 }
             )
 
-        prompt = f"""基于以下信息，为每个实体生成社交媒体活动配置。
+        prompt = f"""Based on the following information, generate social media activity configuration for each entity.
 
-模拟需求: {simulation_requirement}
+Simulation requirement: {simulation_requirement}
 
-## 实体列表
+## Entity List
 ```json
 {json.dumps(entity_list, ensure_ascii=False, indent=2)}
 ```
 
-## 任务
-为每个实体生成活动配置，注意：
-- **时间符合中国人作息**：凌晨0-5点几乎不活动，晚间19-22点最活跃
-- **官方机构**（University/GovernmentAgency）：活跃度低(0.1-0.3)，工作时间(9-17)活动，响应慢(60-240分钟)，影响力高(2.5-3.0)
-- **媒体**（MediaOutlet）：活跃度中(0.4-0.6)，全天活动(8-23)，响应快(5-30分钟)，影响力高(2.0-2.5)
-- **个人**（Student/Person/Alumni）：活跃度高(0.6-0.9)，主要晚间活动(18-23)，响应快(1-15分钟)，影响力低(0.8-1.2)
-- **公众人物/专家**：活跃度中(0.4-0.6)，影响力中高(1.5-2.0)
+## Task
+Generate activity configuration for each entity, note:
+- **Time must align with daily routines**: Almost no activity between 0-5 AM, most active between 7-10 PM.
+- **Official institutions** (University/GovernmentAgency): Low activity(0.1-0.3), active during work hours(9-17), slow response(60-240 minutes), high influence(2.5-3.0).
+- **Media** (MediaOutlet): Medium activity(0.4-0.6), active all day(8-23), fast response(5-30 minutes), high influence(2.0-2.5).
+- **Individuals** (Student/Person/Alumni): High activity(0.6-0.9), primarily evening activity(18-23), fast response(1-15 minutes), low influence(0.8-1.2).
+- **Public figures/Experts**: Medium activity(0.4-0.6), medium-high influence(1.5-2.0).
 
-返回JSON格式（不要markdown）：
+Return JSON format (no markdown):
 {{
     "agent_configs": [
         {{
-            "agent_id": <必须与输入一致>,
+            "agent_id": <must match input>,
             "activity_level": <0.0-1.0>,
-            "posts_per_hour": <发帖频率>,
-            "comments_per_hour": <评论频率>,
-            "active_hours": [<活跃小时列表，考虑中国人作息>],
-            "response_delay_min": <最小响应延迟分钟>,
-            "response_delay_max": <最大响应延迟分钟>,
-            "sentiment_bias": <-1.0到1.0>,
+            "posts_per_hour": <posting frequency>,
+            "comments_per_hour": <comment frequency>,
+            "active_hours": [<list of active hours, consider daily routines>],
+            "response_delay_min": <min response delay in minutes>,
+            "response_delay_max": <max response delay in minutes>,
+            "sentiment_bias": <-1.0 to 1.0>,
             "stance": "<supportive/opposing/neutral/observer>",
-            "influence_weight": <影响力权重>
+            "influence_weight": <influence weight>
         }},
         ...
     ]
 }}"""
 
-        system_prompt = (
-            "你是社交媒体行为分析专家。返回纯JSON，配置需符合中国人作息习惯。"
-        )
+        system_prompt = "You are a social media behavior analysis expert. Return pure JSON, configuration must fit daily routines."
 
         try:
             result = self._call_llm_with_retry(prompt, system_prompt)
@@ -1277,16 +1277,18 @@ Return JSON format (no markdown):
                 cfg["agent_id"]: cfg for cfg in result.get("agent_configs", [])
             }
         except Exception as e:
-            logger.warning(f"Agent配置批次LLM生成失败: {e}, 使用规则生成")
+            logger.warning(
+                f"Agent config batch LLM generation failed: {e}, using rule-based generation"
+            )
             llm_configs = {}
 
-        # 构建AgentActivityConfig对象
+        # Build AgentActivityConfig objects
         configs = []
         for i, entity in enumerate(entities):
             agent_id = start_idx + i
             cfg = llm_configs.get(agent_id, {})
 
-            # 如果LLM没有生成，使用规则生成
+            # If LLM didn't generate it, use rule-based generation
             if not cfg:
                 cfg = self._generate_agent_config_by_rule(entity)
 
@@ -1310,11 +1312,11 @@ Return JSON format (no markdown):
         return configs
 
     def _generate_agent_config_by_rule(self, entity: EntityNode) -> Dict[str, Any]:
-        """基于规则生成单个Agent配置（根据实体类型动态调整）"""
+        """Generates single agent configuration based on rules (dynamically adjusted according to entity type)"""
         entity_type = (entity.get_entity_type() or "Unknown").lower()
 
-        # 基础规则：根据实体类型提供默认配置，后续由 ContextDetector 或 LLM 进行动态调整
-        # 这些规则旨在提供一个合理的初始值，而非死板的固定值
+        # Basic rules: provide default configuration based on entity type, dynamically adjusted by ContextDetector or LLM
+        # These rules aim to provide a reasonable initial value, not a rigid fixed value
         if entity_type in ["university", "governmentagency", "ngo"]:
             return {
                 "activity_level": 0.2,
@@ -1352,7 +1354,7 @@ Return JSON format (no markdown):
                 "influence_weight": 2.0,
             }
         else:
-            # 默认人设
+            # Default persona
             return {
                 "activity_level": 0.5,
                 "posts_per_hour": 0.3,
