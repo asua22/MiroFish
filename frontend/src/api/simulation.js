@@ -185,3 +185,11 @@ export const getSimulationHistory = (limit = 20) => {
   return service.get('/api/simulation/history', { params: { limit } })
 }
 
+/**
+ * Update simulation config (manual edit)
+ * @param {string} simulationId
+ * @param {Object} updates - partial config object with only changed fields
+ */
+export const updateSimulationConfig = (simulationId, updates) => {
+  return service.patch(`/api/simulation/${simulationId}/config`, updates)
+}

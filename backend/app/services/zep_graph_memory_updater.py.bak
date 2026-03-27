@@ -60,7 +60,7 @@ class AgentActivity:
         )
         description = describe_func()
 
-        # 直接返回 "agent名称: 活动描述" 格式，不添加模拟前缀
+        # return directly "agentname: activity description" format，do not add simulation prefix
         return f"{self.agent_name}: {description}"
 
     def _describe_create_post(self) -> str:
@@ -492,60 +492,60 @@ class ZepGraphMemoryUpdater:
             "running": self._running,
         }
 
-    # 发送间隔（秒），避免请求过快
+    # send interval（seconds），avoid fast requests
     SEND_INTERVAL = 0.5
 
-    # 重试配置
+    # retry config
     MAX_RETRIES = 3
-    RETRY_DELAY = 2  # 秒
+    RETRY_DELAY = 2  # seconds
 
     def __init__(self, graph_id: str, api_key: Optional[str] = None):
         """
-        初始化更新器
+        Initialize updater
 
         Args:
-            graph_id: Zep图谱ID
-            api_key: Zep API Key（可选，默认从配置读取）
+            graph_id: ZepgraphID
+            api_key: Zep API Key（optional，default read from config）
         """
         self.graph_id = graph_id
         self.api_key = api_key or Config.ZEP_API_KEY
 
         if not self.api_key:
-            raise ValueError("ZEP_API_KEY未配置")
+            raise ValueError("ZEP_API_KEYnot configured")
 
         self.client = Zep(api_key=self.api_key)
 
-        # 活动队列
+        # Activity queue
         self._activity_queue: Queue = Queue()
 
-        # 按平台分组的活动缓冲区（每个平台各自累积到BATCH_SIZE后批量发送）
+        # platform-grouped activity buffer（each platform accumulates toBATCH_SIZEafter batch send）
         self._platform_buffers: Dict[str, List[AgentActivity]] = {
             "twitter": [],
             "reddit": [],
         }
         self._buffer_lock = threading.Lock()
 
-        # 控制标志
+        # Control flags
         self._running = False
         self._worker_thread: Optional[threading.Thread] = None
 
-        # 统计
-        self._total_activities = 0  # 实际添加到队列的活动数
-        self._total_sent = 0  # 成功发送到Zep的批次数
-        self._total_items_sent = 0  # 成功发送到Zep的活动条数
-        self._failed_count = 0  # 发送失败的批次数
-        self._skipped_count = 0  # 被过滤跳过的活动数（DO_NOTHING）
+        # Statistics
+        self._total_activities = 0  # actually add toqueueactivitiescount
+        self._total_sent = 0  # successfully sent toZepbatchestimescount
+        self._total_items_sent = 0  # successfully sent toZepactivity items
+        self._failed_count = 0  # sendfailedbatchestimescount
+        self._skipped_count = 0  # filteredskipactivitiescount（DO_NOTHING）
 
         logger.info(
-            f"ZepGraphMemoryUpdater 初始化完成: graph_id={graph_id}, batch_size={self.BATCH_SIZE}"
+            f"ZepGraphMemoryUpdater initialized: graph_id={graph_id}, batch_size={self.BATCH_SIZE}"
         )
 
     def _get_platform_display_name(self, platform: str) -> str:
-        """获取平台的显示名称"""
+        """Get platform display name"""
         return self.PLATFORM_DISPLAY_NAMES.get(platform.lower(), platform)
 
     def start(self):
-        """启动后台工作线程"""
+        """Start background worker thread"""
         if self._running:
             return
 
@@ -556,20 +556,20 @@ class ZepGraphMemoryUpdater:
             name=f"ZepMemoryUpdater-{self.graph_id[:8]}",
         )
         self._worker_thread.start()
-        logger.info(f"ZepGraphMemoryUpdater 已启动: graph_id={self.graph_id}")
+        logger.info(f"ZepGraphMemoryUpdater started: graph_id={self.graph_id}")
 
     def stop(self):
-        """停止后台工作线程"""
+        """Stop background worker thread"""
         self._running = False
 
-        # 发送剩余的活动
+        # Send remaining activities
         self._flush_remaining()
 
         if self._worker_thread and self._worker_thread.is_alive():
             self._worker_thread.join(timeout=10)
 
         logger.info(
-            f"ZepGraphMemoryUpdater 已停止: graph_id={self.graph_id}, "
+            f"ZepGraphMemoryUpdater stopped: graph_id={self.graph_id}, "
             f"total_activities={self._total_activities}, "
             f"batches_sent={self._total_sent}, "
             f"items_sent={self._total_items_sent}, "
@@ -579,26 +579,26 @@ class ZepGraphMemoryUpdater:
 
     def add_activity(self, activity: AgentActivity):
         """
-        添加一个agent活动到队列
+        add oneagentactivity to queue
 
-        所有有意义的行为都会被添加到队列，包括：
-        - CREATE_POST（发帖）
-        - CREATE_COMMENT（评论）
-        - QUOTE_POST（引用帖子）
-        - SEARCH_POSTS（搜索帖子）
-        - SEARCH_USER（搜索用户）
-        - LIKE_POST/DISLIKE_POST（点赞/踩帖子）
-        - REPOST（转发）
-        - FOLLOW（关注）
-        - MUTE（屏蔽）
-        - LIKE_COMMENT/DISLIKE_COMMENT（点赞/踩评论）
+        all meaningful actions are added to queue，include：
+        - CREATE_POST（post）
+        - CREATE_COMMENT（comment）
+        - QUOTE_POST（quote post）
+        - SEARCH_POSTS（search posts）
+        - SEARCH_USER（search user）
+        - LIKE_POST/DISLIKE_POST（like/dislike post）
+        - REPOST（repost）
+        - FOLLOW（follow）
+        - MUTE（mute）
+        - LIKE_COMMENT/DISLIKE_COMMENT（like/dislikecomment）
 
-        action_args中会包含完整的上下文信息（如帖子原文、用户名等）。
+        action_argswill contain complete context info（like original post、username etc）。
 
         Args:
-            activity: Agent活动记录
+            activity: Agentactivity record
         """
-        # 跳过DO_NOTHING类型的活动
+        # skipDO_NOTHINGtype of activity
         if activity.action_type == "DO_NOTHING":
             self._skipped_count += 1
             return
@@ -606,18 +606,18 @@ class ZepGraphMemoryUpdater:
         self._activity_queue.put(activity)
         self._total_activities += 1
         logger.debug(
-            f"添加活动到Zep队列: {activity.agent_name} - {activity.action_type}"
+            f"add activity toZepqueue: {activity.agent_name} - {activity.action_type}"
         )
 
     def add_activity_from_dict(self, data: Dict[str, Any], platform: str):
         """
-        从字典数据添加活动
+        Add activity from dict data
 
         Args:
-            data: 从actions.jsonl解析的字典数据
-            platform: 平台名称 (twitter/reddit)
+            data: fromactions.jsonlparsed dict data
+            platform: platformname (twitter/reddit)
         """
-        # 跳过事件类型的条目
+        # skipevent typeitems
         if "event_type" in data:
             return
 
@@ -634,54 +634,54 @@ class ZepGraphMemoryUpdater:
         self.add_activity(activity)
 
     def _worker_loop(self):
-        """后台工作循环 - 按平台批量发送活动到Zep"""
+        """background worker loop - batch send activities to by platformZep"""
         while self._running or not self._activity_queue.empty():
             try:
-                # 尝试从队列获取活动（超时1秒）
+                # try to get activity from queue（timeout1seconds）
                 try:
                     activity = self._activity_queue.get(timeout=1)
 
-                    # 将活动添加到对应平台的缓冲区
+                    # Add activity to corresponding platform buffer
                     platform = activity.platform.lower()
                     with self._buffer_lock:
                         if platform not in self._platform_buffers:
                             self._platform_buffers[platform] = []
                         self._platform_buffers[platform].append(activity)
 
-                        # 检查该平台是否达到批量大小
+                        # Check if platform reached batch size
                         if len(self._platform_buffers[platform]) >= self.BATCH_SIZE:
                             batch = self._platform_buffers[platform][: self.BATCH_SIZE]
                             self._platform_buffers[platform] = self._platform_buffers[
                                 platform
                             ][self.BATCH_SIZE :]
-                            # 释放锁后再发送
+                            # Release lock before sending
                             self._send_batch_activities(batch, platform)
-                            # 发送间隔，避免请求过快
+                            # send interval，avoid fast requests
                             time.sleep(self.SEND_INTERVAL)
 
                 except Empty:
                     pass
 
             except Exception as e:
-                logger.error(f"工作循环异常: {e}")
+                logger.error(f"Worker loop exception: {e}")
                 time.sleep(1)
 
     def _send_batch_activities(self, activities: List[AgentActivity], platform: str):
         """
-        批量发送活动到Zep图谱（合并为一条文本）
+        batch send activities toZepgraph（merged as single text）
 
         Args:
-            activities: Agent活动列表
-            platform: 平台名称
+            activities: Agentactivity list
+            platform: platformname
         """
         if not activities:
             return
 
-        # 将多条活动合并为一条文本，用换行分隔
+        # merge multipleactivity itemsmerged as single text，separated by newlines
         episode_texts = [activity.to_episode_text() for activity in activities]
         combined_text = "\n".join(episode_texts)
 
-        # 带重试的发送
+        # Send with retry
         for attempt in range(self.MAX_RETRIES):
             try:
                 self.client.graph.add(
@@ -692,24 +692,24 @@ class ZepGraphMemoryUpdater:
                 self._total_items_sent += len(activities)
                 display_name = self._get_platform_display_name(platform)
                 logger.info(
-                    f"成功批量发送 {len(activities)} 条{display_name}活动到图谱 {self.graph_id}"
+                    f"successfullybatchsend {len(activities)} items{display_name}activity tograph {self.graph_id}"
                 )
-                logger.debug(f"批量内容预览: {combined_text[:200]}...")
+                logger.debug(f"Batch content preview: {combined_text[:200]}...")
                 return
 
             except Exception as e:
                 if attempt < self.MAX_RETRIES - 1:
                     logger.warning(
-                        f"批量发送到Zep失败 (尝试 {attempt + 1}/{self.MAX_RETRIES}): {e}"
+                        f"batch send toZepfailed (try {attempt + 1}/{self.MAX_RETRIES}): {e}"
                     )
                     time.sleep(self.RETRY_DELAY * (attempt + 1))
                 else:
-                    logger.error(f"批量发送到Zep失败，已重试{self.MAX_RETRIES}次: {e}")
+                    logger.error(f"batch send toZepfailed，retried{self.MAX_RETRIES}times: {e}")
                     self._failed_count += 1
 
     def _flush_remaining(self):
-        """发送队列和缓冲区中剩余的活动"""
-        # 首先处理队列中剩余的活动，添加到缓冲区
+        """sendqueueand remaining activities in buffers"""
+        # first process remaining activities in queue，add to buffer
         while not self._activity_queue.empty():
             try:
                 activity = self._activity_queue.get_nowait()
@@ -721,32 +721,32 @@ class ZepGraphMemoryUpdater:
             except Empty:
                 break
 
-        # 然后发送各平台缓冲区中剩余的活动（即使不足BATCH_SIZE条）
+        # then send remaining activities in platform buffers（even if insufficientBATCH_SIZEitems）
         with self._buffer_lock:
             for platform, buffer in self._platform_buffers.items():
                 if buffer:
                     display_name = self._get_platform_display_name(platform)
-                    logger.info(f"发送{display_name}平台剩余的 {len(buffer)} 条活动")
+                    logger.info(f"send{display_name}remaining platform {len(buffer)} activity items")
                     self._send_batch_activities(buffer, platform)
-            # 清空所有缓冲区
+            # Clear all buffers
             for platform in self._platform_buffers:
                 self._platform_buffers[platform] = []
 
     def get_stats(self) -> Dict[str, Any]:
-        """获取统计信息"""
+        """Get statistics"""
         with self._buffer_lock:
             buffer_sizes = {p: len(b) for p, b in self._platform_buffers.items()}
 
         return {
             "graph_id": self.graph_id,
             "batch_size": self.BATCH_SIZE,
-            "total_activities": self._total_activities,  # 添加到队列的活动总数
-            "batches_sent": self._total_sent,  # 成功发送的批次数
-            "items_sent": self._total_items_sent,  # 成功发送的活动条数
-            "failed_count": self._failed_count,  # 发送失败的批次数
-            "skipped_count": self._skipped_count,  # 被过滤跳过的活动数（DO_NOTHING）
+            "total_activities": self._total_activities,  # total activities added to queue
+            "batches_sent": self._total_sent,  # successfullysendbatchestimescount
+            "items_sent": self._total_items_sent,  # activity items successfully sent
+            "failed_count": self._failed_count,  # sendfailedbatchestimescount
+            "skipped_count": self._skipped_count,  # filteredskipactivitiescount（DO_NOTHING）
             "queue_size": self._activity_queue.qsize(),
-            "buffer_sizes": buffer_sizes,  # 各平台缓冲区大小
+            "buffer_sizes": buffer_sizes,  # buffer sizes per platform
             "running": self._running,
         }
 

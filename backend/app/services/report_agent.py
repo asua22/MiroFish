@@ -543,7 +543,7 @@ Workflow:
 # ── Outline Planning Prompt ──
 
 PLAN_SYSTEM_PROMPT = """\
-You are an expert in writing "Future Prediction Reports" with a "God's-eye view" of the simulation world—you can observe the behaviors, statements, and interactions of every Agent in the simulation.
+You are an expert in writing "Future Prediction Reports" with a "God's-eye view" of the simulation world-you can observe the behaviors, statements, and interactions of every Agent in the simulation.
 
 [Core Philosophy]
 We have constructed a simulation world and injected specific "simulation requirements" as variables. The evolutionary results of the simulation world are a prediction of what might happen in the future. You are observing not "experimental data," but a "future preview."
@@ -625,7 +625,7 @@ Your task is to:
 - Discover future trends, risks, and opportunities worthy of note
 
 ❌ Do not write an analysis of the current real-world situation
-✅ Focus on "what the future will be like"—simulation results are the predicted future
+✅ Focus on "what the future will be like"-simulation results are the predicted future
 
 ================================================================
 [Most Important Rules - Must be followed]
@@ -1486,7 +1486,7 @@ class ReportAgent:
                 unused_hint = ""
                 if unused_tools and tool_calls_count < self.MAX_TOOL_CALLS_PER_SECTION:
                     unused_hint = REACT_UNUSED_TOOLS_HINT.format(
-                        unused_list="、".join(unused_tools)
+                        unused_list=",".join(unused_tools)
                     )
 
                 messages.append({"role": "assistant", "content": response})
@@ -1655,7 +1655,7 @@ class ReportAgent:
                 )
                 logger.info(f"Resuming report: {report_id}")
 
-                # Load existing outline — no planning needed
+                # Load existing outline - no planning needed
                 outline = ReportManager.load_outline(report_id)
                 if not outline:
                     raise ValueError(

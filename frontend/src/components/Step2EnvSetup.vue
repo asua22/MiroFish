@@ -197,6 +197,11 @@
                       <span class="agent-type">{{ agent.entity_type }}</span>
                       <span class="agent-stance" :class="'stance-' + agent.stance">{{ agent.stance }}</span>
                     </div>
+                    <label class="switch-control">
+                        <input type="checkbox" :checked="editingAgentId[agent.agent_id]" @change="e => { if (e.target.checked) { editingAgentId[agent.agent_id] = true } else { saveAgentEdit(agent.agent_id); editingAgentId[agent.agent_id] = false } }" />
+                        <span class="switch-track"></span>                                                                    
+                        <span class="switch-label">Edit</span>
+                    </label>
                   </div>
                   
                   <!-- Active timeline -->
@@ -225,11 +230,20 @@
                     <div class="param-group">
                       <div class="param-item">
                         <span class="param-label">Posts/hour</span>
-                        <span class="param-value">{{ agent.posts_per_hour }}</span>
+                        <template v-if=editingAgentId[agent.agent_id]>
+                          <input v-model.number="agent.posts_per_hour" type="number" step="1" min="0" style="width:50px" />                         
+                          <span style="font-size:11px; color:#888; margin-left:4px">(0 - 50)</span>                        
+                        </template>                                                                               
+                        <span v-else class="param-value">{{ Array.isArray(agent.posts_per_hour) ? agent.posts_per_hour[0] : agent.posts_per_hour }}</span> 
                       </div>
+                      
                       <div class="param-item">
                         <span class="param-label">Comments/hour</span>
-                        <span class="param-value">{{ agent.comments_per_hour }}</span>
+                        <template v-if="editingAgentId[agent.agent_id]">
+                          <input v-model.number="agent.comments_per_hour" type="number" step="1" min="0" style="width:50px" />                         
+                          <span style="font-size:11px; color:#888; margin-left:4px">(0 - 50)</span>                        
+                        </template>
+                        <span v-else class="param-value">{{ Array.isArray(agent.comments_per_hour) ? agent.comments_per_hour[0] : agent.comments_per_hour }}</span>
                       </div>
                       <div class="param-item">
                         <span class="param-label">Response delay</span>
@@ -246,13 +260,21 @@
                       </div>
                       <div class="param-item">
                         <span class="param-label">Sentiment bias</span>
-                        <span class="param-value" :class="agent.sentiment_bias > 0 ? 'positive' : agent.sentiment_bias < 0 ? 'negative' : 'neutral'">
-                          {{ agent.sentiment_bias > 0 ? '+' : '' }}{{ agent.sentiment_bias?.toFixed(1) }}
-                        </span>
+                        <template v-if="editingAgentId[agent.agent_id]">                                                                         
+                          <input v-model.number="agent.sentiment_bias" type="number" step="0.1" min="-1" max="1" style="width:55px" />
+                          <span style="font-size:11px; color:#888; margin-left:4px">(-1.0 - 1.0)</span>                                             
+                        </template>                                                                            
+                        <span v-else class="param-value" :class="agent.sentiment_bias > 0 ? 'positive' : agent.sentiment_bias < 0 ? 'negative' : 'neutral'">                                                                         
+                          {{ agent.sentiment_bias > 0 ? '+' : '' }}{{ agent.sentiment_bias?.toFixed(1) }}                   
+                        </span> 
                       </div>
                       <div class="param-item">
                         <span class="param-label">Influence</span>
-                        <span class="param-value highlight">{{ agent.influence_weight?.toFixed(1) }}</span>
+                        <template v-if="editingAgentId[agent.agent_id]">                                                                         
+                          <input v-model.number="agent.influence_weight" type="number" step="0.1" min="0" max="5" style="width:50px" />
+                          <span style="font-size:11px; color:#888; margin-left:4px">(0 - 5)</span>                                     
+                        </template>                                                               
+                        <span v-else class="param-value highlight">{{ agent.influence_weight?.toFixed(1) }}</span>
                       </div>
                     </div>
                   </div>
@@ -269,54 +291,113 @@
                 <div v-if="simulationConfig.twitter_config" class="platform-card">
                   <div class="platform-card-header">
                     <span class="platform-name">Platform 1: Square / Feed</span>
+                    <label class="switch-control">                                                                          
+                        <input type="checkbox" v-model="editingTwitter" @change="e => { if (!e.target.checked) savePlatformEdit('twitter') }" />                                                                            
+                        <span class="switch-track"></span>                                                                    
+                        <span class="switch-label">Edit</span>
+                    </label>                                                                                                  
                   </div>
                   <div class="platform-params">
                     <div class="param-row">
                       <span class="param-label">Recency weight</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.recency_weight }}</span>
+                      <template v-if="editingTwitter">                                                       
+                        <input v-model.number="simulationConfig.twitter_config.recency_weight" type="number" step="0.1" 
+                          min="0" max="1" style="width:55px" />                                                                                       
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 1)</span>                            
+                      </template>                                                                                           
+                      <span v-else class="param-value">{{ simulationConfig.twitter_config.recency_weight }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Popularity weight</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.popularity_weight }}</span>
+                      <template v-if="editingTwitter">
+                        <input v-model.number="simulationConfig.twitter_config.popularity_weight" type="number" step="0.1"  
+                          min="0" max="1" style="width:55px" />                                                                                       
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 1)</span>                            
+                      </template>                                                                                           
+                      <span v-else class="param-value">{{ simulationConfig.twitter_config.popularity_weight }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Relevance weight</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.relevance_weight }}</span>
+                      <template v-if="editingTwitter">
+                        <input v-model.number="simulationConfig.twitter_config.relevance_weight" type="number" step="0.1"  
+                          min="0" max="1" style="width:55px" />                                                                                       
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 1)</span>                            
+                      </template>                                                                                           
+                      <span v-else class="param-value">{{ simulationConfig.twitter_config.relevance_weight }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Viral threshold</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.viral_threshold }}</span>
+                      <template v-if="editingTwitter">
+                        <input v-model.number="simulationConfig.twitter_config.viral_threshold" type="number" step="1" min="0" max="100"             
+                          style="width:55px" />                                                                                     
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 100)</span>                            
+                      </template>
+                      <span v-else class="param-value">{{ simulationConfig.twitter_config.viral_threshold }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Echo chamber strength</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.echo_chamber_strength }}</span>
+                      <template v-if="editingTwitter">
+                        <input v-model.number="simulationConfig.twitter_config.echo_chamber_strength" type="number"         
+                          step="0.1" min="0" max="1" style="width:55px" />                                                                    
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 1)</span>                            
+                      </template>
+                      <span v-else class="param-value">{{ simulationConfig.twitter_config.echo_chamber_strength }}</span>
                     </div>
                   </div>
                 </div>
                 <div v-if="simulationConfig.reddit_config" class="platform-card">
                   <div class="platform-card-header">
                     <span class="platform-name">Platform 2: Topic / Community</span>
+                    <label class="switch-control">                                                                          
+                        <input type="checkbox" v-model="editingReddit" @change="e => { if (!e.target.checked) savePlatformEdit('reddit') }" />                                                                            
+                        <span class="switch-track"></span>                                                                    
+                        <span class="switch-label">Edit</span>
+                    </label>
                   </div>
                   <div class="platform-params">
                     <div class="param-row">
                       <span class="param-label">Recency weight</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.recency_weight }}</span>
+                      <template v-if="editingReddit">                                                        
+                        <input v-model.number="simulationConfig.reddit_config.recency_weight" type="number" step="0.1" 
+                          min="0" max="1" style="width:55px" />                                                                                  
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 1)</span>                            
+                      </template>                                                               
+                      <span v-else class="param-value">{{ simulationConfig.reddit_config.recency_weight }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Popularity weight</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.popularity_weight }}</span>
+                      <template v-if="editingReddit">
+                        <input v-model.number="simulationConfig.reddit_config.popularity_weight" type="number" step="0.1"   
+                          min="0" max="1" style="width:55px" />                                                                                     
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 1)</span>                            
+                      </template>                                                               
+                      <span v-else class="param-value">{{ simulationConfig.reddit_config.popularity_weight }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Relevance weight</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.relevance_weight }}</span>
+                      <template v-if="editingReddit">
+                        <input v-model.number="simulationConfig.reddit_config.relevance_weight" type="number" step="0.1"   
+                          min="0" max="1" style="width:55px" />                                                                                     
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 1)</span>                            
+                      </template>                                                               
+                      <span v-else class="param-value">{{ simulationConfig.reddit_config.relevance_weight }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Viral threshold</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.viral_threshold }}</span>
+                      <template v-if="editingReddit">
+                        <input v-model.number="simulationConfig.reddit_config.viral_threshold" type="number" step="1" min="0" max="100" style="width:55px" />
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 100)</span>                            
+                      </template>                                                               
+                      <span v-else class="param-value">{{ simulationConfig.reddit_config.viral_threshold }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Echo chamber strength</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.echo_chamber_strength }}</span>
+                      <template v-if="editingReddit">
+                        <input v-model.number="simulationConfig.reddit_config.echo_chamber_strength" type="number" step="0.1"   
+                          min="0" max="1" style="width:55px" />                                                                                     
+                        <span style="font-size:11px; color:#888; margin-left:4px">(0 - 1)</span>                            
+                      </template>                                                               
+                      <span v-else class="param-value">{{ simulationConfig.reddit_config.echo_chamber_strength }}</span>
                     </div>
                   </div>
                 </div>
@@ -635,7 +716,8 @@ import {
   getPrepareStatus, 
   getSimulationProfilesRealtime,
   getSimulationConfig,
-  getSimulationConfigRealtime 
+  getSimulationConfigRealtime,
+  updateSimulationConfig
 } from '../api/simulation'
 
 const props = defineProps({
@@ -659,6 +741,9 @@ const expectedTotal = ref(null)
 const simulationConfig = ref(null)
 const selectedProfile = ref(null)
 const showProfilesDetail = ref(true)
+const editingAgentId = ref({}) 
+const editingTwitter = ref(false) 
+const editingReddit = ref(false) 
 
 // Dedup logs: track last output key info
 let lastLoggedMessage = ''
@@ -730,6 +815,33 @@ const totalTopicsCount = computed(() => {
 })
 
 // Methods
+async function saveAgentEdit(agentId) {
+  try {
+    await updateSimulationConfig(props.simulationId, {
+      agent_configs: simulationConfig.value.agent_configs
+    })
+    editingAgentId.value[agentId] = false
+  } catch (e) {
+    console.error('Error saving agent config:', e)
+  }
+}
+
+async function savePlatformEdit(platform) {
+  try {
+    const updates = {}
+    if (platform === 'twitter') {
+      updates.twitter_config = simulationConfig.value.twitter_config
+    } else if (platform === 'reddit') {
+      updates.reddit_config = simulationConfig.value.reddit_config
+    }
+    await updateSimulationConfig(props.simulationId, updates)
+    if (platform === 'twitter') editingTwitter.value = false
+    else editingReddit.value = false
+  } catch (e) {
+    console.error('Error saving platform config:', e)
+  }
+}
+
 const addLog = (msg) => {
   emit('add-log', msg)
 }

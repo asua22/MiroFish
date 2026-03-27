@@ -60,7 +60,7 @@ class AgentActivity:
         )
         description = describe_func()
 
-        # 直接返回 "agent名称: 活动描述" 格式，不添加模拟前缀
+        # 直接返回 "agent名称: 活动描述" 格式,不添加模拟前缀
         return f"{self.agent_name}: {description}"
 
     def _describe_create_post(self) -> str:

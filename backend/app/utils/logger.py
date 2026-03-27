@@ -1,6 +1,6 @@
 """
 日志配置模块
-提供统一的日志管理，同时输出到控制台和文件
+提供统一的日志管理,同时输出到控制台和文件
 """
 
 import os
@@ -45,10 +45,10 @@ def setup_logger(name: str = 'mirofish', level: int = logging.DEBUG) -> logging.
     logger = logging.getLogger(name)
     logger.setLevel(level)
     
-    # 阻止日志向上传播到根 logger，避免重复输出
+    # 阻止日志向上传播到根 logger,避免重复输出
     logger.propagate = False
     
-    # 如果已经有处理器，不重复添加
+    # 如果已经有处理器,不重复添加
     if logger.handlers:
         return logger
     
@@ -63,7 +63,7 @@ def setup_logger(name: str = 'mirofish', level: int = logging.DEBUG) -> logging.
         datefmt='%H:%M:%S'
     )
     
-    # 1. 文件处理器 - 详细日志（按日期命名，带轮转）
+    # 1. 文件处理器 - 详细日志(按日期命名,带轮转)
     log_filename = datetime.now().strftime('%Y-%m-%d') + '.log'
     file_handler = RotatingFileHandler(
         os.path.join(LOG_DIR, log_filename),
@@ -74,8 +74,8 @@ def setup_logger(name: str = 'mirofish', level: int = logging.DEBUG) -> logging.
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(detailed_formatter)
     
-    # 2. 控制台处理器 - 简洁日志（INFO及以上）
-    # 确保 Windows 下使用 UTF-8 编码，避免中文乱码
+    # 2. 控制台处理器 - 简洁日志(INFO及以上)
+    # 确保 Windows 下使用 UTF-8 编码,避免中文乱码
     _ensure_utf8_stdout()
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
@@ -90,7 +90,7 @@ def setup_logger(name: str = 'mirofish', level: int = logging.DEBUG) -> logging.
 
 def get_logger(name: str = 'mirofish') -> logging.Logger:
     """
-    获取日志器（如果不存在则创建）
+    获取日志器(如果不存在则创建)
     
     Args:
         name: 日志器名称

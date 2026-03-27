@@ -29,7 +29,7 @@ class TextProcessor:
             overlap: Overlap size
             
         Returns:
-            文本块列表
+            text chunk list
         """
         return split_text_into_chunks(text, chunk_size, overlap)
     
