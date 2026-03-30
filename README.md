@@ -258,3 +258,70 @@ The services will be available at:
 ---
 
 > **Note:** The project does not include large dependencies (like Python virtual environment or node_modules) in the repository. These are automatically installed during Step 3 using `requirements.txt` and `package.json`.
+
+Si no tienes el gestor de paquetes de python uv instalado, puedes instalarlo con el siguiente comando:
+
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+
+recarga el PATH:
+
+  source ~/.bashrc
+
+Luego:
+
+  npm run dev
+
+---
+
+## Configuración para servidores sin GPU dedicada
+
+Si estás ejecutando MiroFish en un servidor sin GPU dedicada y encuentras el siguiente error al arrancar:
+
+```
+error: can't find Rust compiler
+× Failed to build `tiktoken==0.7.0`
+```
+
+Es necesario fijar la versión de Python a **3.12**. A continuación se detallan los cambios exactos a realizar manualmente.
+
+### Archivos a modificar
+
+#### 1. Crear `backend/.python-version` (archivo nuevo — línea 1)
+
+Crea el archivo `backend/.python-version` con el siguiente contenido:
+
+```
+3.12
+```
+
+Este archivo le indica a `uv` qué versión de Python usar al crear el entorno virtual del backend.
+
+#### 2. Eliminar el entorno virtual anterior (si existe)
+
+Si ya intentaste arrancar el proyecto y se creó un `.venv` con Python 3.13, elimínalo antes de reintentar:
+
+```bash
+rm -rf backend/.venv
+```
+
+#### 3. Instalar Python 3.12 mediante uv (si no está disponible en el sistema)
+
+```bash
+uv python install 3.12
+```
+
+#### 4. Arrancar el proyecto de nuevo
+
+```bash
+npm run dev
+```
+
+### Por qué fue necesario hacer esta configuración
+
+`camel-ai==0.2.78`, una dependencia del backend, requiere internamente `tiktoken==0.7.0`. Esta librería tiene partes escritas en Rust para maximizar el rendimiento en la tokenización de texto.
+
+Cuando `uv` (o `pip`) instala un paquete, primero busca un **wheel** — un archivo precompilado específico para tu sistema operativo, arquitectura de CPU y versión de Python. Si no existe ese wheel, intenta compilar el paquete desde el código fuente, lo que en el caso de `tiktoken` requiere tener el compilador de Rust instalado.
+
+`tiktoken==0.7.0` fue publicado antes de que Python 3.13 fuera estable, por lo que sus mantenedores no generaron wheels para esa combinación (`Python 3.13 + Linux`). En cambio, `tiktoken==0.7.0` **sí tiene wheels precompilados para Python 3.12**, por lo que `uv` puede instalarlo directamente sin necesitar compilar nada ni tener Rust en el sistema.
+
+En resumen: el cambio a Python 3.12 no modifica ninguna lógica del proyecto (el `pyproject.toml` declara `requires-python = ">=3.11"`), simplemente garantiza que `uv` encuentre los binarios precompilados correctos para todas las dependencias.

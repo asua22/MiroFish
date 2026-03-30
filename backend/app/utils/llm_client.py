@@ -10,10 +10,16 @@ from openai import OpenAI
 
 from ..config import Config
 
+def strip_think_blocks(text: str) -> str:
+    """Remove <think>...</think> blocks from model output (e.g. DeepSeek-R1)."""
+    if text is None:
+        return text
+    return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+
 
 class LLMClient:
     """LLM client"""
-    
+
     def __init__(
         self,
         api_key: Optional[str] = None,
@@ -29,7 +35,8 @@ class LLMClient:
         
         self.client = OpenAI(
             api_key=self.api_key,
-            base_url=self.base_url
+            base_url=self.base_url,
+            timeout=600 #10 min necesario para modelos lentos en CPU
         )
     
     def chat(
@@ -61,11 +68,9 @@ class LLMClient:
         if response_format:
             kwargs["response_format"] = response_format
         
-        response = self.client.chat.completions.create(**kwargs)
+        response = self.client.chat.completions.create(**kwargs, timeout=600)
         content = response.choices[0].message.content
-        # Some models (like MiniMax M2.5) include <think> blocks in content, need to remove
-        content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()
-        return content
+        return strip_think_blocks(content)
     
     def chat_json(
         self,

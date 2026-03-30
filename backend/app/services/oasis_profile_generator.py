@@ -22,6 +22,8 @@ from ..config import Config
 from ..utils.logger import get_logger
 from .zep_entity_reader import EntityNode, ZepEntityReader
 
+from ..utils.llm_client import strip_think_blocks
+
 logger = get_logger("mirofish.oasis_profile")
 
 
@@ -605,6 +607,8 @@ class OasisProfileGenerator:
                 )
 
                 content = response.choices[0].message.content
+                content = strip_think_blocks(content)
+
 
                 # Check if truncated (finish_reason is not 'stop')
                 finish_reason = response.choices[0].finish_reason
