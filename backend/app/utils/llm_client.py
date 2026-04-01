@@ -3,10 +3,13 @@ LLM Client Wrapper
 Unified OpenAI format API calls
 Supports Ollama num_ctx parameter to prevent prompt truncation
 """
+import logging
+logger = logging.getLogger(__name__)
 
 import json
 import os
 import re
+import time
 from typing import Optional, Dict, Any, List
 from openai import OpenAI
 
@@ -21,7 +24,7 @@ class LLMClient:
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         model: Optional[str] = None,
-        timeout: float = 300.0
+        timeout: float = 600.0
     ):
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
@@ -78,12 +81,20 @@ class LLMClient:
             kwargs["extra_body"] = {
                 "options": {"num_ctx": self._num_ctx}
             }
+        start = time.time()
+        logger.info(f"[LLM] >>> llamando modelo={self.model} | mensajes={len(messages)} | max_tokens={max_tokens}")
 
         response = self.client.chat.completions.create(**kwargs)
+
+        elapsed = time.time() - start
+        usage = response.usage
+        logger.info(f"[LLM] <<< respuesta en {elapsed:.1f}s | prompt={usage.prompt_tokens} completion={usage.completion_tokens} total={usage.total_tokens} tokens")
+
         content = response.choices[0].message.content
         # Some models (like MiniMax M2.5) include <think>thinking content in response, need to remove
         content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()
         return content
+
 
     def chat_json(
         self,
