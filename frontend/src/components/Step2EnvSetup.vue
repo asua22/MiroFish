@@ -2,7 +2,10 @@
   <div class="env-setup-panel">
     <div class="scroll-container">
       <!-- Step 01: Simulation Instance -->
-      <div class="step-card" :class="{ 'active': phase === 0, 'completed': phase > 0 }">
+      <div
+        class="step-card"
+        :class="{ active: phase === 0, completed: phase > 0 }"
+      >
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">01</span>
@@ -13,11 +16,12 @@
             <span v-else class="badge processing">Initialization</span>
           </div>
         </div>
-        
+
         <div class="card-content">
           <p class="api-note">POST /api/simulation/create</p>
           <p class="description">
-            Create new simulation instance and fetch simulated world parameter template
+            Create new simulation instance and fetch simulated world parameter
+            template
           </p>
 
           <div v-if="simulationId" class="info-card">
@@ -35,14 +39,19 @@
             </div>
             <div class="info-row">
               <span class="info-label">Task ID</span>
-              <span class="info-value mono">{{ taskId || 'Async task completed' }}</span>
+              <span class="info-value mono">{{
+                taskId || "Async task completed"
+              }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Step 02: Generate Agent Personas -->
-      <div class="step-card" :class="{ 'active': phase === 1, 'completed': phase > 1 }">
+      <div
+        class="step-card"
+        :class="{ active: phase === 1, completed: phase > 1 }"
+      >
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">02</span>
@@ -50,7 +59,9 @@
           </div>
           <div class="step-status">
             <span v-if="phase > 1" class="badge success">Completed</span>
-            <span v-else-if="phase === 1" class="badge processing">{{ prepareProgress }}%</span>
+            <span v-else-if="phase === 1" class="badge processing"
+              >{{ prepareProgress }}%</span
+            >
             <span v-else class="badge pending">Waiting</span>
           </div>
         </div>
@@ -58,7 +69,10 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/prepare</p>
           <p class="description">
-            Combined with context，Automatically invoke tools to organize entities and relationships from knowledge graph，Initialize simulation individuals，and give them unique behaviors and memories based on reality seed
+            Combined with context，Automatically invoke tools to organize
+            entities and relationships from knowledge graph，Initialize
+            simulation individuals，and give them unique behaviors and memories
+            based on reality seed
           </p>
 
           <!-- Profiles Stats -->
@@ -68,12 +82,14 @@
               <span class="stat-label">Current Agent Count</span>
             </div>
             <div class="stat-card">
-              <span class="stat-value">{{ expectedTotal || '-' }}</span>
+              <span class="stat-value">{{ expectedTotal || "-" }}</span>
               <span class="stat-label">Expected Agent Total</span>
             </div>
             <div class="stat-card">
               <span class="stat-value">{{ totalTopicsCount }}</span>
-              <span class="stat-label">Current Related Topics Count for Reality Seed</span>
+              <span class="stat-label"
+                >Current Related Topics Count for Reality Seed</span
+              >
             </div>
           </div>
 
@@ -83,27 +99,42 @@
               <span class="preview-title">Generated Agent Personas</span>
             </div>
             <div class="profiles-list">
-              <div 
-                v-for="(profile, idx) in profiles" 
-                :key="idx" 
+              <div
+                v-for="(profile, idx) in profiles"
+                :key="idx"
                 class="profile-card"
                 @click="selectProfile(profile)"
               >
                 <div class="profile-header">
-                  <span class="profile-realname">{{ profile.username || 'Unknown' }}</span>
-                  <span class="profile-username">@{{ profile.name || `agent_${idx}` }}</span>
+                  <span class="profile-realname">{{
+                    profile.username || "Unknown"
+                  }}</span>
+                  <span class="profile-username"
+                    >@{{ profile.name || `agent_${idx}` }}</span
+                  >
                 </div>
                 <div class="profile-meta">
-                  <span class="profile-profession">{{ profile.profession || 'Unknown Profession' }}</span>
+                  <span class="profile-profession">{{
+                    profile.profession || "Unknown Profession"
+                  }}</span>
                 </div>
-                <p class="profile-bio">{{ profile.bio || 'No introduction available' }}</p>
-                <div v-if="profile.interested_topics?.length" class="profile-topics">
-                  <span 
-                    v-for="topic in profile.interested_topics.slice(0, 3)" 
-                    :key="topic" 
+                <p class="profile-bio">
+                  {{ profile.bio || "No introduction available" }}
+                </p>
+                <div
+                  v-if="profile.interested_topics?.length"
+                  class="profile-topics"
+                >
+                  <span
+                    v-for="topic in profile.interested_topics.slice(0, 3)"
+                    :key="topic"
                     class="topic-tag"
-                  >{{ topic }}</span>
-                  <span v-if="profile.interested_topics.length > 3" class="topic-more">
+                    >{{ topic }}</span
+                  >
+                  <span
+                    v-if="profile.interested_topics.length > 3"
+                    class="topic-more"
+                  >
                     +{{ profile.interested_topics.length - 3 }}
                   </span>
                 </div>
@@ -114,15 +145,22 @@
       </div>
 
       <!-- Step 03: Generate Dual Platform Simulation Configuration -->
-      <div class="step-card" :class="{ 'active': phase === 2, 'completed': phase > 2 }">
+      <div
+        class="step-card"
+        :class="{ active: phase === 2, completed: phase > 2 }"
+      >
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">03</span>
-            <span class="step-title">Generate Dual Platform Simulation Configuration</span>
+            <span class="step-title"
+              >Generate Dual Platform Simulation Configuration</span
+            >
           </div>
           <div class="step-status">
             <span v-if="phase > 2" class="badge success">Completed</span>
-            <span v-else-if="phase === 2" class="badge processing">Generating</span>
+            <span v-else-if="phase === 2" class="badge processing"
+              >Generating</span
+            >
             <span v-else class="badge pending">Waiting</span>
           </div>
         </div>
@@ -130,9 +168,12 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/prepare</p>
           <p class="description">
-            LLM Based on simulation requirements and reality seed，Intelligently set world time flow rate、Recommendation algorithm、Active time period for each individual、Speech frequency、Event trigger and other parameters
+            LLM Based on simulation requirements and reality seed，Intelligently
+            set world time flow rate、Recommendation algorithm、Active time
+            period for each individual、Speech frequency、Event trigger and
+            other parameters
           </p>
-          
+
           <!-- Config Preview -->
           <div v-if="simulationConfig" class="config-detail-panel">
             <!-- Time Configuration -->
@@ -140,41 +181,103 @@
               <div class="config-grid">
                 <div class="config-item">
                   <span class="config-item-label">Simulation Duration</span>
-                  <span class="config-item-value">{{ simulationConfig.time_config?.total_simulation_hours || '-' }} hours</span>
+                  <span class="config-item-value"
+                    >{{
+                      simulationConfig.time_config?.total_simulation_hours ||
+                      "-"
+                    }}
+                    hours</span
+                  >
                 </div>
                 <div class="config-item">
                   <span class="config-item-label">Duration per round</span>
-                  <span class="config-item-value">{{ simulationConfig.time_config?.minutes_per_round || '-' }} minutes</span>
+                  <span class="config-item-value"
+                    >{{
+                      simulationConfig.time_config?.minutes_per_round || "-"
+                    }}
+                    minutes</span
+                  >
                 </div>
                 <div class="config-item">
                   <span class="config-item-label">Total rounds</span>
-                  <span class="config-item-value">{{ Math.floor((simulationConfig.time_config?.total_simulation_hours * 60 / simulationConfig.time_config?.minutes_per_round)) || '-' }} rounds</span>
+                  <span class="config-item-value"
+                    >{{
+                      Math.floor(
+                        (simulationConfig.time_config?.total_simulation_hours *
+                          60) /
+                          simulationConfig.time_config?.minutes_per_round,
+                      ) || "-"
+                    }}
+                    rounds</span
+                  >
                 </div>
                 <div class="config-item">
                   <span class="config-item-label">Active per hour</span>
-                  <span class="config-item-value">{{ simulationConfig.time_config?.agents_per_hour_min }}-{{ simulationConfig.time_config?.agents_per_hour_max }}</span>
+                  <span class="config-item-value"
+                    >{{ simulationConfig.time_config?.agents_per_hour_min }}-{{
+                      simulationConfig.time_config?.agents_per_hour_max
+                    }}</span
+                  >
                 </div>
               </div>
               <div class="time-periods">
                 <div class="period-item">
                   <span class="period-label">Peak period</span>
-                  <span class="period-hours">{{ simulationConfig.time_config?.peak_hours?.join(':00, ') }}:00</span>
-                  <span class="period-multiplier">×{{ simulationConfig.time_config?.peak_activity_multiplier }}</span>
+                  <span class="period-hours"
+                    >{{
+                      simulationConfig.time_config?.peak_hours?.join(":00, ")
+                    }}:00</span
+                  >
+                  <span class="period-multiplier"
+                    >×{{
+                      simulationConfig.time_config?.peak_activity_multiplier
+                    }}</span
+                  >
                 </div>
                 <div class="period-item">
                   <span class="period-label">Working hours</span>
-                  <span class="period-hours">{{ simulationConfig.time_config?.work_hours?.[0] }}:00-{{ simulationConfig.time_config?.work_hours?.slice(-1)[0] }}:00</span>
-                  <span class="period-multiplier">×{{ simulationConfig.time_config?.work_activity_multiplier }}</span>
+                  <span class="period-hours"
+                    >{{ simulationConfig.time_config?.work_hours?.[0] }}:00-{{
+                      simulationConfig.time_config?.work_hours?.slice(-1)[0]
+                    }}:00</span
+                  >
+                  <span class="period-multiplier"
+                    >×{{
+                      simulationConfig.time_config?.work_activity_multiplier
+                    }}</span
+                  >
                 </div>
                 <div class="period-item">
                   <span class="period-label">Morning time period</span>
-                  <span class="period-hours">{{ simulationConfig.time_config?.morning_hours?.[0] }}:00-{{ simulationConfig.time_config?.morning_hours?.slice(-1)[0] }}:00</span>
-                  <span class="period-multiplier">×{{ simulationConfig.time_config?.morning_activity_multiplier }}</span>
+                  <span class="period-hours"
+                    >{{
+                      simulationConfig.time_config?.morning_hours?.[0]
+                    }}:00-{{
+                      simulationConfig.time_config?.morning_hours?.slice(-1)[0]
+                    }}:00</span
+                  >
+                  <span class="period-multiplier"
+                    >×{{
+                      simulationConfig.time_config?.morning_activity_multiplier
+                    }}</span
+                  >
                 </div>
                 <div class="period-item">
                   <span class="period-label">Valley period</span>
-                  <span class="period-hours">{{ simulationConfig.time_config?.off_peak_hours?.[0] }}:00-{{ simulationConfig.time_config?.off_peak_hours?.slice(-1)[0] }}:00</span>
-                  <span class="period-multiplier">×{{ simulationConfig.time_config?.off_peak_activity_multiplier }}</span>
+                  <span class="period-hours"
+                    >{{
+                      simulationConfig.time_config?.off_peak_hours?.[0]
+                    }}:00-{{
+                      simulationConfig.time_config?.off_peak_hours?.slice(
+                        -1,
+                      )[0]
+                    }}:00</span
+                  >
+                  <span class="period-multiplier"
+                    >×{{
+                      simulationConfig.time_config?.off_peak_activity_multiplier
+                    }}</span
+                  >
                 </div>
               </div>
             </div>
@@ -183,12 +286,17 @@
             <div class="config-block">
               <div class="config-block-header">
                 <span class="config-block-title">Agent Configuration</span>
-                <span class="config-block-badge">{{ simulationConfig.agent_configs?.length || 0 }} Number</span>
+                <span class="config-block-badge"
+                  >{{
+                    simulationConfig.agent_configs?.length || 0
+                  }}
+                  Number</span
+                >
               </div>
               <div class="agents-cards">
-                <div 
-                  v-for="agent in simulationConfig.agent_configs" 
-                  :key="agent.agent_id" 
+                <div
+                  v-for="agent in simulationConfig.agent_configs"
+                  :key="agent.agent_id"
                   class="agent-card"
                 >
                   <!-- Card header -->
@@ -199,19 +307,43 @@
                     </div>
                     <div class="agent-tags">
                       <span class="agent-type">{{ agent.entity_type }}</span>
-                      <span class="agent-stance" :class="'stance-' + agent.stance">{{ agent.stance }}</span>
+                      <span
+                        class="agent-stance"
+                        :class="'stance-' + agent.stance"
+                        >{{ agent.stance }}</span
+                      >
                     </div>
+                    <label class="switch-control">
+                      <input
+                        type="checkbox"
+                        :checked="editingAgentId[agent.agent_id]"
+                        @change="
+                          (e) => {
+                            if (e.target.checked) {
+                              editingAgentId[agent.agent_id] = true;
+                            } else {
+                              saveAgentEdit(agent.agent_id);
+                              editingAgentId[agent.agent_id] = false;
+                            }
+                          }
+                        "
+                      />
+                      <span class="switch-track"></span>
+                      <span class="switch-label">Edit</span>
+                    </label>
                   </div>
-                  
+
                   <!-- Active timeline -->
                   <div class="agent-timeline">
                     <span class="timeline-label">Active period</span>
                     <div class="mini-timeline">
-                      <div 
-                        v-for="hour in 24" 
-                        :key="hour - 1" 
+                      <div
+                        v-for="hour in 24"
+                        :key="hour - 1"
                         class="timeline-hour"
-                        :class="{ 'active': agent.active_hours?.includes(hour - 1) }"
+                        :class="{
+                          active: agent.active_hours?.includes(hour - 1),
+                        }"
                         :title="`${hour - 1}:00`"
                       ></div>
                     </div>
@@ -229,34 +361,104 @@
                     <div class="param-group">
                       <div class="param-item">
                         <span class="param-label">Post/time</span>
-                        <span class="param-value">{{ agent.posts_per_hour }}</span>
+                        <span v-if="editingAgentId[agent.agent_id]" class="edit-field">
+                          <input
+                            v-model.number="agent.posts_per_hour"
+                            type="number"
+                            step="1"
+                            min="0"
+                            style="width: 50px"
+                          />
+                          <span style="font-size: 11px; color: #888">(0 - 50)</span>
+                        </span>
+                        <span v-else class="param-value">{{
+                          Array.isArray(agent.posts_per_hour)
+                            ? agent.posts_per_hour[0]
+                            : agent.posts_per_hour
+                        }}</span>
                       </div>
                       <div class="param-item">
                         <span class="param-label">Comment/time</span>
-                        <span class="param-value">{{ agent.comments_per_hour }}</span>
+                        <span v-if="editingAgentId[agent.agent_id]" class="edit-field">
+                          <input
+                            v-model.number="agent.comments_per_hour"
+                            type="number"
+                            step="1"
+                            min="0"
+                            style="width: 50px"
+                          />
+                          <span style="font-size: 11px; color: #888">(0 - 50)</span>
+                        </span>
+                        <span v-else class="param-value">{{
+                          Array.isArray(agent.comments_per_hour)
+                            ? agent.comments_per_hour[0]
+                            : agent.comments_per_hour
+                        }}</span>
                       </div>
                       <div class="param-item">
                         <span class="param-label">Response delay</span>
-                        <span class="param-value">{{ agent.response_delay_min }}-{{ agent.response_delay_max }}min</span>
+                        <span class="param-value"
+                          >{{ agent.response_delay_min }}-{{
+                            agent.response_delay_max
+                          }}min</span
+                        >
                       </div>
                     </div>
                     <div class="param-group">
                       <div class="param-item">
                         <span class="param-label">Activity level</span>
                         <span class="param-value with-bar">
-                          <span class="mini-bar" :style="{ width: (agent.activity_level * 100) + '%' }"></span>
+                          <span
+                            class="mini-bar"
+                            :style="{ width: agent.activity_level * 100 + '%' }"
+                          ></span>
                           {{ (agent.activity_level * 100).toFixed(0) }}%
                         </span>
                       </div>
                       <div class="param-item">
                         <span class="param-label">Sentiment tendency</span>
-                        <span class="param-value" :class="agent.sentiment_bias > 0 ? 'positive' : agent.sentiment_bias < 0 ? 'negative' : 'neutral'">
-                          {{ agent.sentiment_bias > 0 ? '+' : '' }}{{ agent.sentiment_bias?.toFixed(1) }}
+                        <span v-if="editingAgentId[agent.agent_id]" class="edit-field">
+                          <input
+                            v-model.number="agent.sentiment_bias"
+                            type="number"
+                            step="0.1"
+                            min="-1"
+                            max="1"
+                            style="width: 55px"
+                          />
+                          <span style="font-size: 11px; color: #888">(-1.0 - 1.0)</span>
+                        </span>
+                        <span
+                          v-else
+                          class="param-value"
+                          :class="
+                            agent.sentiment_bias > 0
+                              ? 'positive'
+                              : agent.sentiment_bias < 0
+                                ? 'negative'
+                                : 'neutral'
+                          "
+                        >
+                          {{ agent.sentiment_bias > 0 ? "+" : ""
+                          }}{{ agent.sentiment_bias?.toFixed(1) }}
                         </span>
                       </div>
                       <div class="param-item">
                         <span class="param-label">Influence</span>
-                        <span class="param-value highlight">{{ agent.influence_weight?.toFixed(1) }}</span>
+                        <span v-if="editingAgentId[agent.agent_id]" class="edit-field">
+                          <input
+                            v-model.number="agent.influence_weight"
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            max="5"
+                            style="width: 50px"
+                          />
+                          <span style="font-size: 11px; color: #888">(0 - 5)</span>
+                        </span>
+                        <span v-else class="param-value highlight">{{
+                          agent.influence_weight?.toFixed(1)
+                        }}</span>
                       </div>
                     </div>
                   </div>
@@ -267,60 +469,228 @@
             <!-- Platform configuration -->
             <div class="config-block">
               <div class="config-block-header">
-                <span class="config-block-title">Recommendation algorithm configuration</span>
+                <span class="config-block-title"
+                  >Recommendation algorithm configuration</span
+                >
               </div>
               <div class="platforms-grid">
-                <div v-if="simulationConfig.twitter_config" class="platform-card">
+                <div
+                  v-if="simulationConfig.twitter_config"
+                  class="platform-card"
+                >
                   <div class="platform-card-header">
-                    <span class="platform-name">Platform 1：Square / Information flow</span>
+                    <span class="platform-name"
+                      >Platform 1：Square / Information flow</span
+                    >
+                    <label class="switch-control">
+                      <input
+                        type="checkbox"
+                        v-model="editingTwitter"
+                        @change="
+                          (e) => {
+                            if (!e.target.checked) savePlatformEdit('twitter');
+                          }
+                        "
+                      />
+                      <span class="switch-track"></span>
+                      <span class="switch-label">Edit</span>
+                    </label>
                   </div>
                   <div class="platform-params">
                     <div class="param-row">
                       <span class="param-label">Time weight</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.recency_weight }}</span>
+                      <span v-if="editingTwitter" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.twitter_config.recency_weight"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.twitter_config.recency_weight
+                      }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Popularity weight</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.popularity_weight }}</span>
+                      <span v-if="editingTwitter" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.twitter_config.popularity_weight"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.twitter_config.popularity_weight
+                      }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Relevance weight</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.relevance_weight }}</span>
+                      <span v-if="editingTwitter" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.twitter_config.relevance_weight"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.twitter_config.relevance_weight
+                      }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Virus threshold</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.viral_threshold }}</span>
+                      <span v-if="editingTwitter" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.twitter_config.viral_threshold"
+                          type="number"
+                          step="1"
+                          min="0"
+                          max="100"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 100)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.twitter_config.viral_threshold
+                      }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Echo chamber strength</span>
-                      <span class="param-value">{{ simulationConfig.twitter_config.echo_chamber_strength }}</span>
+                      <span v-if="editingTwitter" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.twitter_config.echo_chamber_strength"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.twitter_config.echo_chamber_strength
+                      }}</span>
                     </div>
                   </div>
                 </div>
-                <div v-if="simulationConfig.reddit_config" class="platform-card">
+                <div
+                  v-if="simulationConfig.reddit_config"
+                  class="platform-card"
+                >
                   <div class="platform-card-header">
-                    <span class="platform-name">Platform 2：Topic / Community</span>
+                    <span class="platform-name"
+                      >Platform 2：Topic / Community</span
+                    >
+                    <label class="switch-control">
+                      <input
+                        type="checkbox"
+                        v-model="editingReddit"
+                        @change="
+                          (e) => {
+                            if (!e.target.checked) savePlatformEdit('reddit');
+                          }
+                        "
+                      />
+                      <span class="switch-track"></span>
+                      <span class="switch-label">Edit</span>
+                    </label>
                   </div>
                   <div class="platform-params">
                     <div class="param-row">
                       <span class="param-label">Time weight</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.recency_weight }}</span>
+                      <span v-if="editingReddit" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.reddit_config.recency_weight"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.reddit_config.recency_weight
+                      }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Popularity weight</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.popularity_weight }}</span>
+                      <span v-if="editingReddit" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.reddit_config.popularity_weight"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.reddit_config.popularity_weight
+                      }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Relevance weight</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.relevance_weight }}</span>
+                      <span v-if="editingReddit" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.reddit_config.relevance_weight"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.reddit_config.relevance_weight
+                      }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Virus threshold</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.viral_threshold }}</span>
+                      <span v-if="editingReddit" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.reddit_config.viral_threshold"
+                          type="number"
+                          step="1"
+                          min="0"
+                          max="100"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 100)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.reddit_config.viral_threshold
+                      }}</span>
                     </div>
                     <div class="param-row">
                       <span class="param-label">Echo chamber strength</span>
-                      <span class="param-value">{{ simulationConfig.reddit_config.echo_chamber_strength }}</span>
+                      <span v-if="editingReddit" class="edit-field">
+                        <input
+                          v-model.number="simulationConfig.reddit_config.echo_chamber_strength"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          style="width: 55px"
+                        />
+                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                      </span>
+                      <span v-else class="param-value">{{
+                        simulationConfig.reddit_config.echo_chamber_strength
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -328,14 +698,21 @@
             </div>
 
             <!-- LLM Configuration inference -->
-            <div v-if="simulationConfig.generation_reasoning" class="config-block">
+            <div
+              v-if="simulationConfig.generation_reasoning"
+              class="config-block"
+            >
               <div class="config-block-header">
-                <span class="config-block-title">LLM Configuration inference</span>
+                <span class="config-block-title"
+                  >LLM Configuration inference</span
+                >
               </div>
               <div class="reasoning-content">
-                <div 
-                  v-for="(reason, idx) in simulationConfig.generation_reasoning.split('|').slice(0, 2)" 
-                  :key="idx" 
+                <div
+                  v-for="(reason, idx) in simulationConfig.generation_reasoning
+                    .split('|')
+                    .slice(0, 2)"
+                  :key="idx"
                   class="reasoning-item"
                 >
                   <p class="reasoning-text">{{ reason.trim() }}</p>
@@ -347,7 +724,10 @@
       </div>
 
       <!-- Step 04: Initial activation arrangement -->
-      <div class="step-card" :class="{ 'active': phase === 3, 'completed': phase > 3 }">
+      <div
+        class="step-card"
+        :class="{ active: phase === 3, completed: phase > 3 }"
+      >
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">04</span>
@@ -355,7 +735,9 @@
           </div>
           <div class="step-status">
             <span v-if="phase > 3" class="badge success">Completed</span>
-            <span v-else-if="phase === 3" class="badge processing">Arranging</span>
+            <span v-else-if="phase === 3" class="badge processing"
+              >Arranging</span
+            >
             <span v-else class="badge pending">Waiting</span>
           </div>
         </div>
@@ -363,33 +745,71 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/prepare</p>
           <p class="description">
-            Based on narrative direction，Automatically generate initial activation events and trending topics，Guide the initial state of the simulated world
+            Based on narrative direction，Automatically generate initial
+            activation events and trending topics，Guide the initial state of
+            the simulated world
           </p>
 
-          <div v-if="simulationConfig?.event_config" class="orchestration-content">
+          <div
+            v-if="simulationConfig?.event_config"
+            class="orchestration-content"
+          >
             <!-- Narrative Direction -->
             <div class="narrative-box">
               <span class="box-label narrative-label">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="special-icon">
-                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="url(#paint0_linear)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M16.24 7.76L14.12 14.12L7.76 16.24L9.88 9.88L16.24 7.76Z" fill="url(#paint0_linear)" stroke="url(#paint0_linear)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="special-icon"
+                >
+                  <path
+                    d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                    stroke="url(#paint0_linear)"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M16.24 7.76L14.12 14.12L7.76 16.24L9.88 9.88L16.24 7.76Z"
+                    fill="url(#paint0_linear)"
+                    stroke="url(#paint0_linear)"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                   <defs>
-                    <linearGradient id="paint0_linear" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                      <stop stop-color="#FF5722"/>
-                      <stop offset="1" stop-color="#FF9800"/>
+                    <linearGradient
+                      id="paint0_linear"
+                      x1="2"
+                      y1="2"
+                      x2="22"
+                      y2="22"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop stop-color="#FF5722" />
+                      <stop offset="1" stop-color="#FF9800" />
                     </linearGradient>
                   </defs>
                 </svg>
                 Narrative Guidance Direction
               </span>
-              <p class="narrative-text">{{ simulationConfig.event_config.narrative_direction }}</p>
+              <p class="narrative-text">
+                {{ simulationConfig.event_config.narrative_direction }}
+              </p>
             </div>
 
             <!-- Trending Topics -->
             <div class="topics-section">
               <span class="box-label">Initial trending topics</span>
               <div class="hot-topics-grid">
-                <span v-for="topic in simulationConfig.event_config.hot_topics" :key="topic" class="hot-topic-tag">
+                <span
+                  v-for="topic in simulationConfig.event_config.hot_topics"
+                  :key="topic"
+                  class="hot-topic-tag"
+                >
                   # {{ topic }}
                 </span>
               </div>
@@ -397,16 +817,29 @@
 
             <!-- Initial post stream -->
             <div class="initial-posts-section">
-              <span class="box-label">Initial activation sequence ({{ simulationConfig.event_config.initial_posts.length }})</span>
+              <span class="box-label"
+                >Initial activation sequence ({{
+                  simulationConfig.event_config.initial_posts.length
+                }})</span
+              >
               <div class="posts-timeline">
-                <div v-for="(post, idx) in simulationConfig.event_config.initial_posts" :key="idx" class="timeline-item">
+                <div
+                  v-for="(post, idx) in simulationConfig.event_config
+                    .initial_posts"
+                  :key="idx"
+                  class="timeline-item"
+                >
                   <div class="timeline-marker"></div>
                   <div class="timeline-content">
                     <div class="post-header">
                       <span class="post-role">{{ post.poster_type }}</span>
                       <span class="post-agent-info">
-                        <span class="post-id">Agent {{ post.poster_agent_id }}</span>
-                        <span class="post-username">@{{ getAgentUsername(post.poster_agent_id) }}</span>
+                        <span class="post-id"
+                          >Agent {{ post.poster_agent_id }}</span
+                        >
+                        <span class="post-username"
+                          >@{{ getAgentUsername(post.poster_agent_id) }}</span
+                        >
                       </span>
                     </div>
                     <p class="post-text">{{ post.content }}</p>
@@ -419,7 +852,7 @@
       </div>
 
       <!-- Step 05: Preparation completed -->
-      <div class="step-card" :class="{ 'active': phase === 4 }">
+      <div class="step-card" :class="{ active: phase === 4 }">
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">05</span>
@@ -433,57 +866,89 @@
 
         <div class="card-content">
           <p class="api-note">POST /api/simulation/start</p>
-          <p class="description">Simulation environment preparation completed，Can start running simulation</p>
-          
+          <p class="description">
+            Simulation environment preparation completed，Can start running
+            simulation
+          </p>
+
           <!-- Simulation Rounds Configuration - Only show after configuration generation is completed and rounds are calculated -->
-          <div v-if="simulationConfig && autoGeneratedRounds" class="rounds-config-section">
+          <div
+            v-if="simulationConfig && autoGeneratedRounds"
+            class="rounds-config-section"
+          >
             <div class="rounds-header">
               <div class="header-left">
                 <span class="section-title">Simulation Rounds Setting</span>
-                <span class="section-desc">MiroFish Automatically plan and infer reality <span class="desc-highlight">{{ simulationConfig?.time_config?.total_simulation_hours || '-' }}</span> hours，Each round represents reality <span class="desc-highlight">{{ simulationConfig?.time_config?.minutes_per_round || '-' }}</span> minutes time elapsed</span>
+                <span class="section-desc"
+                  >MiroFish Automatically plan and infer reality
+                  <span class="desc-highlight">{{
+                    simulationConfig?.time_config?.total_simulation_hours || "-"
+                  }}</span>
+                  hours，Each round represents reality
+                  <span class="desc-highlight">{{
+                    simulationConfig?.time_config?.minutes_per_round || "-"
+                  }}</span>
+                  minutes time elapsed</span
+                >
               </div>
               <label class="switch-control">
-                <input type="checkbox" v-model="useCustomRounds">
+                <input type="checkbox" v-model="useCustomRounds" />
                 <span class="switch-track"></span>
                 <span class="switch-label">Custom</span>
               </label>
             </div>
-            
+
             <Transition name="fade" mode="out-in">
-              <div v-if="useCustomRounds" class="rounds-content custom" key="custom">
+              <div
+                v-if="useCustomRounds"
+                class="rounds-content custom"
+                key="custom"
+              >
                 <div class="slider-display">
                   <div class="slider-main-value">
                     <span class="val-num">{{ customMaxRounds }}</span>
                     <span class="val-unit">rounds</span>
                   </div>
                   <div class="slider-meta-info">
-                    <span>IfAgentScale is100：Estimated time approximately {{ Math.round(customMaxRounds * 0.6) }} minutes</span>
+                    <span
+                      >IfAgentScale is100：Estimated time approximately
+                      {{ Math.round(customMaxRounds * 0.6) }} minutes</span
+                    >
                   </div>
                 </div>
 
                 <div class="range-wrapper">
-                  <input 
-                    type="range" 
-                    v-model.number="customMaxRounds" 
-                    min="10" 
+                  <input
+                    type="range"
+                    v-model.number="customMaxRounds"
+                    min="10"
                     :max="autoGeneratedRounds"
                     step="5"
                     class="minimal-slider"
-                    :style="{ '--percent': ((customMaxRounds - 10) / (autoGeneratedRounds - 10)) * 100 + '%' }"
+                    :style="{
+                      '--percent':
+                        ((customMaxRounds - 10) / (autoGeneratedRounds - 10)) *
+                          100 +
+                        '%',
+                    }"
                   />
                   <div class="range-marks">
                     <span>10</span>
-                    <span 
-                      class="mark-recommend" 
+                    <span
+                      class="mark-recommend"
                       :class="{ active: customMaxRounds === 40 }"
                       @click="customMaxRounds = 40"
-                      :style="{ position: 'absolute', left: `calc(${(40 - 10) / (autoGeneratedRounds - 10) * 100}% - 30px)` }"
-                    >40 (Recommendation)</span>
+                      :style="{
+                        position: 'absolute',
+                        left: `calc(${((40 - 10) / (autoGeneratedRounds - 10)) * 100}% - 30px)`,
+                      }"
+                      >40 (Recommendation)</span
+                    >
                     <span>{{ autoGeneratedRounds }}</span>
                   </div>
                 </div>
               </div>
-              
+
               <div v-else class="rounds-content auto" key="auto">
                 <div class="auto-info-card">
                   <div class="auto-value">
@@ -493,15 +958,29 @@
                   <div class="auto-content">
                     <div class="auto-meta-row">
                       <span class="duration-badge">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
                           <circle cx="12" cy="12" r="10"></circle>
                           <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
-                        IfAgentScale is100：Estimated time {{ Math.round(autoGeneratedRounds * 0.6) }} minutes
+                        IfAgentScale is100：Estimated time
+                        {{ Math.round(autoGeneratedRounds * 0.6) }} minutes
                       </span>
                     </div>
                     <div class="auto-desc">
-                      <p class="highlight-tip" @click="useCustomRounds = true">If first run，Strongly recommend switching to‘Custom mode’Reduce simulation rounds，to quickly preview effects and reduce error risk ➝</p>
+                      <p class="highlight-tip" @click="useCustomRounds = true">
+                        If first run，Strongly recommend switching to‘Custom
+                        mode’Reduce simulation rounds，to quickly preview
+                        effects and reduce error risk ➝
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -510,13 +989,10 @@
           </div>
 
           <div class="action-group dual">
-            <button 
-              class="action-btn secondary"
-              @click="$emit('go-back')"
-            >
+            <button class="action-btn secondary" @click="$emit('go-back')">
               ← Return graph construction
             </button>
-            <button 
+            <button
               class="action-btn primary"
               :disabled="phase < 4"
               @click="handleStartSimulation"
@@ -530,88 +1006,120 @@
 
     <!-- Profile Detail Modal -->
     <Transition name="modal">
-      <div v-if="selectedProfile" class="profile-modal-overlay" @click.self="selectedProfile = null">
+      <div
+        v-if="selectedProfile"
+        class="profile-modal-overlay"
+        @click.self="selectedProfile = null"
+      >
         <div class="profile-modal">
           <div class="modal-header">
-          <div class="modal-header-info">
-            <div class="modal-name-row">
-              <span class="modal-realname">{{ selectedProfile.username }}</span>
-              <span class="modal-username">@{{ selectedProfile.name }}</span>
+            <div class="modal-header-info">
+              <div class="modal-name-row">
+                <span class="modal-realname">{{
+                  selectedProfile.username
+                }}</span>
+                <span class="modal-username">@{{ selectedProfile.name }}</span>
+              </div>
+              <span class="modal-profession">{{
+                selectedProfile.profession
+              }}</span>
             </div>
-            <span class="modal-profession">{{ selectedProfile.profession }}</span>
+            <button class="close-btn" @click="selectedProfile = null">×</button>
           </div>
-          <button class="close-btn" @click="selectedProfile = null">×</button>
+
+          <div class="modal-body">
+            <!-- Basic information -->
+            <div class="modal-info-grid">
+              <div class="info-item">
+                <span class="info-label">Age manifestation</span>
+                <span class="info-value"
+                  >{{ selectedProfile.age || "-" }} years old</span
+                >
+              </div>
+              <div class="info-item">
+                <span class="info-label">Gender manifestation</span>
+                <span class="info-value">{{
+                  { male: "Male", female: "Female", other: "Other" }[
+                    selectedProfile.gender
+                  ] || selectedProfile.gender
+                }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Country/Region</span>
+                <span class="info-value">{{
+                  selectedProfile.country || "-"
+                }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Event manifestationMBTI</span>
+                <span class="info-value mbti">{{
+                  selectedProfile.mbti || "-"
+                }}</span>
+              </div>
+            </div>
+
+            <!-- Introduction -->
+            <div class="modal-section">
+              <span class="section-label">Persona Introduction</span>
+              <p class="section-bio">
+                {{ selectedProfile.bio || "No introduction available" }}
+              </p>
+            </div>
+
+            <!-- Followed Topics -->
+            <div
+              class="modal-section"
+              v-if="selectedProfile.interested_topics?.length"
+            >
+              <span class="section-label">Reality Seed Related Topics</span>
+              <div class="topics-grid">
+                <span
+                  v-for="topic in selectedProfile.interested_topics"
+                  :key="topic"
+                  class="topic-item"
+                  >{{ topic }}</span
+                >
+              </div>
+            </div>
+
+            <!-- Detailed Persona -->
+            <div class="modal-section" v-if="selectedProfile.persona">
+              <span class="section-label">Detailed Persona Background</span>
+
+              <!-- Persona Dimension Overview -->
+              <div class="persona-dimensions">
+                <div class="dimension-card">
+                  <span class="dim-title">Event panoramic experience</span>
+                  <span class="dim-desc"
+                    >Complete behavior trajectory in this event</span
+                  >
+                </div>
+                <div class="dimension-card">
+                  <span class="dim-title">Behavior pattern profiling</span>
+                  <span class="dim-desc"
+                    >Experience summary and action style preference</span
+                  >
+                </div>
+                <div class="dimension-card">
+                  <span class="dim-title">Unique memory imprints</span>
+                  <span class="dim-desc"
+                    >Memory formed based on reality seed</span
+                  >
+                </div>
+                <div class="dimension-card">
+                  <span class="dim-title">Social Relationship Network</span>
+                  <span class="dim-desc"
+                    >Individual Links and Interaction Graph</span
+                  >
+                </div>
+              </div>
+
+              <div class="persona-content">
+                <p class="section-persona">{{ selectedProfile.persona }}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div class="modal-body">
-          <!-- Basic information -->
-          <div class="modal-info-grid">
-            <div class="info-item">
-              <span class="info-label">Age manifestation</span>
-              <span class="info-value">{{ selectedProfile.age || '-' }} years old</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Gender manifestation</span>
-              <span class="info-value">{{ { male: 'Male', female: 'Female', other: 'Other' }[selectedProfile.gender] || selectedProfile.gender }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Country/Region</span>
-              <span class="info-value">{{ selectedProfile.country || '-' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Event manifestationMBTI</span>
-              <span class="info-value mbti">{{ selectedProfile.mbti || '-' }}</span>
-            </div>
-          </div>
-
-          <!-- Introduction -->
-          <div class="modal-section">
-            <span class="section-label">Persona Introduction</span>
-            <p class="section-bio">{{ selectedProfile.bio || 'No introduction available' }}</p>
-          </div>
-
-          <!-- Followed Topics -->
-          <div class="modal-section" v-if="selectedProfile.interested_topics?.length">
-            <span class="section-label">Reality Seed Related Topics</span>
-            <div class="topics-grid">
-              <span 
-                v-for="topic in selectedProfile.interested_topics" 
-                :key="topic" 
-                class="topic-item"
-              >{{ topic }}</span>
-            </div>
-          </div>
-
-          <!-- Detailed Persona -->
-          <div class="modal-section" v-if="selectedProfile.persona">
-            <span class="section-label">Detailed Persona Background</span>
-            
-            <!-- Persona Dimension Overview -->
-            <div class="persona-dimensions">
-              <div class="dimension-card">
-                <span class="dim-title">Event panoramic experience</span>
-                <span class="dim-desc">Complete behavior trajectory in this event</span>
-              </div>
-              <div class="dimension-card">
-                <span class="dim-title">Behavior pattern profiling</span>
-                <span class="dim-desc">Experience summary and action style preference</span>
-              </div>
-              <div class="dimension-card">
-                <span class="dim-title">Unique memory imprints</span>
-                <span class="dim-desc">Memory formed based on reality seed</span>
-              </div>
-              <div class="dimension-card">
-                <span class="dim-title">Social Relationship Network</span>
-                <span class="dim-desc">Individual Links and Interaction Graph</span>
-              </div>
-            </div>
-
-            <div class="persona-content">
-              <p class="section-persona">{{ selectedProfile.persona }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
       </div>
     </Transition>
 
@@ -619,7 +1127,7 @@
     <div class="system-logs">
       <div class="log-header">
         <span class="log-title">SYSTEM DASHBOARD</span>
-        <span class="log-id">{{ simulationId || 'NO_SIMULATION' }}</span>
+        <span class="log-id">{{ simulationId || "NO_SIMULATION" }}</span>
       </div>
       <div class="log-content" ref="logContent">
         <div class="log-line" v-for="(log, idx) in systemLogs" :key="idx">
@@ -632,452 +1140,536 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { 
-  prepareSimulation, 
-  getPrepareStatus, 
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import {
+  prepareSimulation,
+  getPrepareStatus,
   getSimulationProfilesRealtime,
   getSimulationConfig,
-  getSimulationConfigRealtime 
-} from '../api/simulation'
+  getSimulationConfigRealtime,
+  updateSimulationConfig,
+} from "../api/simulation";
 
 const props = defineProps({
-  simulationId: String,  // Passed from parent component
+  simulationId: String, // Passed from parent component
   projectData: Object,
   graphData: Object,
-  systemLogs: Array
-})
+  systemLogs: Array,
+});
 
-const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
+const emit = defineEmits(["go-back", "next-step", "add-log", "update-status"]);
 
 // State
-const phase = ref(0) // 0: Initialization, 1: Generate Personas, 2: Generate Configuration, 3: Complete
-const taskId = ref(null)
-const prepareProgress = ref(0)
-const currentStage = ref('')
-const progressMessage = ref('')
-const profiles = ref([])
-const entityTypes = ref([])
-const expectedTotal = ref(null)
-const simulationConfig = ref(null)
-const selectedProfile = ref(null)
-const showProfilesDetail = ref(true)
+const phase = ref(0); // 0: Initialization, 1: Generate Personas, 2: Generate Configuration, 3: Complete
+const taskId = ref(null);
+const prepareProgress = ref(0);
+const currentStage = ref("");
+const progressMessage = ref("");
+const profiles = ref([]);
+const entityTypes = ref([]);
+const expectedTotal = ref(null);
+const simulationConfig = ref(null);
+const selectedProfile = ref(null);
+const showProfilesDetail = ref(true);
+const editingAgentId = ref({});
+const editingTwitter = ref(false);
+const editingReddit = ref(false);
 
 // Log deduplication：Record key information from last output
-let lastLoggedMessage = ''
-let lastLoggedProfileCount = 0
-let lastLoggedConfigStage = ''
+let lastLoggedMessage = "";
+let lastLoggedProfileCount = 0;
+let lastLoggedConfigStage = "";
 
 // Simulation Rounds Configuration
-const useCustomRounds = ref(false) // DefaultUse auto-configured rounds
-const customMaxRounds = ref(40)   // Default recommendation40rounds
+const useCustomRounds = ref(false); // DefaultUse auto-configured rounds
+const customMaxRounds = ref(40); // Default recommendation40rounds
 
 // Watch stage to update phase
 watch(currentStage, (newStage) => {
-  if (newStage === 'GenerateAgentPersona' || newStage === 'generating_profiles') {
-    phase.value = 1
-  } else if (newStage === 'Generate Simulation Configuration' || newStage === 'generating_config') {
-    phase.value = 2
+  if (
+    newStage === "GenerateAgentPersona" ||
+    newStage === "generating_profiles"
+  ) {
+    phase.value = 1;
+  } else if (
+    newStage === "Generate Simulation Configuration" ||
+    newStage === "generating_config"
+  ) {
+    phase.value = 2;
     // Enter configuration generation phase，Start polling configuration
     if (!configTimer) {
-      addLog('Start generating dual platform simulation configuration...')
-      startConfigPolling()
+      addLog("Start generating dual platform simulation configuration...");
+      startConfigPolling();
     }
-  } else if (newStage === 'Prepare simulation script' || newStage === 'copying_scripts') {
-    phase.value = 2 // Still in configuration phase
+  } else if (
+    newStage === "Prepare simulation script" ||
+    newStage === "copying_scripts"
+  ) {
+    phase.value = 2; // Still in configuration phase
   }
-})
+});
 
 // Calculate auto-generated rounds from configuration（Do not use hardcoded default values）
 const autoGeneratedRounds = computed(() => {
   if (!simulationConfig.value?.time_config) {
-    return null // Return when configuration is not generated null
+    return null; // Return when configuration is not generated null
   }
-  const totalHours = simulationConfig.value.time_config.total_simulation_hours
-  const minutesPerRound = simulationConfig.value.time_config.minutes_per_round
+  const totalHours = simulationConfig.value.time_config.total_simulation_hours;
+  const minutesPerRound = simulationConfig.value.time_config.minutes_per_round;
   if (!totalHours || !minutesPerRound) {
-    return null // Return when configuration data is incomplete null
+    return null; // Return when configuration data is incomplete null
   }
-  const calculatedRounds = Math.floor((totalHours * 60) / minutesPerRound)
+  const calculatedRounds = Math.floor((totalHours * 60) / minutesPerRound);
   // Ensure max rounds no less than40（Recommendation value），Avoid slider range anomalies
-  return Math.max(calculatedRounds, 40)
-})
+  return Math.max(calculatedRounds, 40);
+});
 
 // Polling timer
-let pollTimer = null
-let profilesTimer = null
-let configTimer = null
+let pollTimer = null;
+let profilesTimer = null;
+let configTimer = null;
 
 // Computed
 const displayProfiles = computed(() => {
   if (showProfilesDetail.value) {
-    return profiles.value
+    return profiles.value;
   }
-  return profiles.value.slice(0, 6)
-})
+  return profiles.value.slice(0, 6);
+});
 
 // Based onagent_idGet correspondingusername
 const getAgentUsername = (agentId) => {
   if (profiles.value && profiles.value.length > agentId && agentId >= 0) {
-    const profile = profiles.value[agentId]
-    return profile?.username || `agent_${agentId}`
+    const profile = profiles.value[agentId];
+    return profile?.username || `agent_${agentId}`;
   }
-  return `agent_${agentId}`
-}
+  return `agent_${agentId}`;
+};
 
 // Calculate total related topics for all personas
 const totalTopicsCount = computed(() => {
   return profiles.value.reduce((sum, p) => {
-    return sum + (p.interested_topics?.length || 0)
-  }, 0)
-})
+    return sum + (p.interested_topics?.length || 0);
+  }, 0);
+});
 
 // Methods
-const addLog = (msg) => {
-  emit('add-log', msg)
+async function saveAgentEdit(agentId) {
+  try {
+    await updateSimulationConfig(props.simulationId, {
+      agent_configs: simulationConfig.value.agent_configs,
+    });
+    editingAgentId.value[agentId] = false;
+  } catch (e) {
+    console.error("Error saving agent config:", e);
+  }
 }
+
+async function savePlatformEdit(platform) {
+  try {
+    const updates = {};
+    if (platform === "twitter") {
+      updates.twitter_config = simulationConfig.value.twitter_config;
+    } else if (platform === "reddit") {
+      updates.reddit_config = simulationConfig.value.reddit_config;
+    }
+    await updateSimulationConfig(props.simulationId, updates);
+    if (platform === "twitter") editingTwitter.value = false;
+    else editingReddit.value = false;
+  } catch (e) {
+    console.error("Error saving platform config:", e);
+  }
+}
+
+const addLog = (msg) => {
+  emit("add-log", msg);
+};
 
 // ProcessStart simulationButton click
 const handleStartSimulation = () => {
   // Build parameters to pass to parent component
-  const params = {}
-  
+  const params = {};
+
   if (useCustomRounds.value) {
     // User custom rounds，Pass max_rounds Parameter
-    params.maxRounds = customMaxRounds.value
-    addLog(`Start simulation，Custom rounds: ${customMaxRounds.value} rounds`)
+    params.maxRounds = customMaxRounds.value;
+    addLog(`Start simulation，Custom rounds: ${customMaxRounds.value} rounds`);
   } else {
     // User chose to keep auto-generated rounds，Do not pass max_rounds Parameter
-    addLog(`Start simulation，Use auto-configured rounds: ${autoGeneratedRounds.value} rounds`)
+    addLog(
+      `Start simulation，Use auto-configured rounds: ${autoGeneratedRounds.value} rounds`,
+    );
   }
-  
-  emit('next-step', params)
-}
+
+  emit("next-step", params);
+};
 
 const truncateBio = (bio) => {
   if (bio.length > 80) {
-    return bio.substring(0, 80) + '...'
+    return bio.substring(0, 80) + "...";
   }
-  return bio
-}
+  return bio;
+};
 
 const selectProfile = (profile) => {
-  selectedProfile.value = profile
-}
+  selectedProfile.value = profile;
+};
 
 // Automatically start preparing simulation
 const startPrepareSimulation = async () => {
   if (!props.simulationId) {
-    addLog('Error：Missing simulationId')
-    emit('update-status', 'error')
-    return
+    addLog("Error：Missing simulationId");
+    emit("update-status", "error");
+    return;
   }
-  
+
   // Mark step 1 completed，Start step 2
-  phase.value = 1
-  addLog(`Simulation instance created: ${props.simulationId}`)
-  addLog('Preparing simulation environment...')
-  emit('update-status', 'processing')
-  
+  phase.value = 1;
+  addLog(`Simulation instance created: ${props.simulationId}`);
+  addLog("Preparing simulation environment...");
+  emit("update-status", "processing");
+
   try {
     const res = await prepareSimulation({
       simulation_id: props.simulationId,
       use_llm_for_profiles: true,
-      parallel_profile_count: 5
-    })
-    
+      parallel_profile_count: 5,
+    });
+
     if (res.success && res.data) {
       if (res.data.already_prepared) {
-        addLog('Detected existing completed preparation work，Use directly')
-        await loadPreparedData()
-        return
+        addLog("Detected existing completed preparation work，Use directly");
+        await loadPreparedData();
+        return;
       }
-      
-      taskId.value = res.data.task_id
-      addLog(`Preparation task started`)
-      addLog(`  └─ Task ID: ${res.data.task_id}`)
-      
+
+      taskId.value = res.data.task_id;
+      addLog(`Preparation task started`);
+      addLog(`  └─ Task ID: ${res.data.task_id}`);
+
       // Set immediatelyExpected Agent Total（FromprepareInterface return value retrieval）
       if (res.data.expected_entities_count) {
-        expectedTotal.value = res.data.expected_entities_count
-        addLog(`FromNeo4jGraph read ${res.data.expected_entities_count} entities`)
+        expectedTotal.value = res.data.expected_entities_count;
+        addLog(
+          `FromNeo4jGraph read ${res.data.expected_entities_count} entities`,
+        );
         if (res.data.entity_types && res.data.entity_types.length > 0) {
-          addLog(`  └─ Entity Type: ${res.data.entity_types.join(', ')}`)
+          addLog(`  └─ Entity Type: ${res.data.entity_types.join(", ")}`);
         }
       }
-      
-      addLog('Start polling preparation progress...')
+
+      addLog("Start polling preparation progress...");
       // Start polling progress
-      startPolling()
+      startPolling();
       // Start real-time fetching Profiles
-      startProfilesPolling()
+      startProfilesPolling();
     } else {
-      addLog(`Preparation failed: ${res.error || 'Unknown error'}`)
-      emit('update-status', 'error')
+      addLog(`Preparation failed: ${res.error || "Unknown error"}`);
+      emit("update-status", "error");
     }
   } catch (err) {
-    addLog(`Preparation exception: ${err.message}`)
-    emit('update-status', 'error')
+    addLog(`Preparation exception: ${err.message}`);
+    emit("update-status", "error");
   }
-}
+};
 
 const startPolling = () => {
-  pollTimer = setInterval(pollPrepareStatus, 2000)
-}
+  pollTimer = setInterval(pollPrepareStatus, 2000);
+};
 
 const stopPolling = () => {
   if (pollTimer) {
-    clearInterval(pollTimer)
-    pollTimer = null
+    clearInterval(pollTimer);
+    pollTimer = null;
   }
-}
+};
 
 const startProfilesPolling = () => {
-  profilesTimer = setInterval(fetchProfilesRealtime, 3000)
-}
+  profilesTimer = setInterval(fetchProfilesRealtime, 3000);
+};
 
 const stopProfilesPolling = () => {
   if (profilesTimer) {
-    clearInterval(profilesTimer)
-    profilesTimer = null
+    clearInterval(profilesTimer);
+    profilesTimer = null;
   }
-}
+};
 
 const pollPrepareStatus = async () => {
-  if (!taskId.value && !props.simulationId) return
-  
+  if (!taskId.value && !props.simulationId) return;
+
   try {
     const res = await getPrepareStatus({
       task_id: taskId.value,
-      simulation_id: props.simulationId
-    })
-    
+      simulation_id: props.simulationId,
+    });
+
     if (res.success && res.data) {
-      const data = res.data
-      
+      const data = res.data;
+
       // Update progress
-      prepareProgress.value = data.progress || 0
-      progressMessage.value = data.message || ''
-      
+      prepareProgress.value = data.progress || 0;
+      progressMessage.value = data.message || "";
+
       // Parse phase information and output detailed log
       if (data.progress_detail) {
-        currentStage.value = data.progress_detail.current_stage_name || ''
-        
+        currentStage.value = data.progress_detail.current_stage_name || "";
+
         // Output detailed progress log（Avoid duplication）
-        const detail = data.progress_detail
-        const logKey = `${detail.current_stage}-${detail.current_item}-${detail.total_items}`
+        const detail = data.progress_detail;
+        const logKey = `${detail.current_stage}-${detail.current_item}-${detail.total_items}`;
         if (logKey !== lastLoggedMessage && detail.item_description) {
-          lastLoggedMessage = logKey
-          const stageInfo = `[${detail.stage_index}/${detail.total_stages}]`
+          lastLoggedMessage = logKey;
+          const stageInfo = `[${detail.stage_index}/${detail.total_stages}]`;
           if (detail.total_items > 0) {
-            addLog(`${stageInfo} ${detail.current_stage_name}: ${detail.current_item}/${detail.total_items} - ${detail.item_description}`)
+            addLog(
+              `${stageInfo} ${detail.current_stage_name}: ${detail.current_item}/${detail.total_items} - ${detail.item_description}`,
+            );
           } else {
-            addLog(`${stageInfo} ${detail.current_stage_name}: ${detail.item_description}`)
+            addLog(
+              `${stageInfo} ${detail.current_stage_name}: ${detail.item_description}`,
+            );
           }
         }
       } else if (data.message) {
         // Extract phase from message
-        const match = data.message.match(/\[(\d+)\/(\d+)\]\s*([^:]+)/)
+        const match = data.message.match(/\[(\d+)\/(\d+)\]\s*([^:]+)/);
         if (match) {
-          currentStage.value = match[3].trim()
+          currentStage.value = match[3].trim();
         }
         // Output message log（Avoid duplication）
         if (data.message !== lastLoggedMessage) {
-          lastLoggedMessage = data.message
-          addLog(data.message)
+          lastLoggedMessage = data.message;
+          addLog(data.message);
         }
       }
-      
+
       // Check if completed
-      if (data.status === 'completed' || data.status === 'ready' || data.already_prepared) {
-        addLog('✓ Preparation work completed')
-        stopPolling()
-        stopProfilesPolling()
-        await loadPreparedData()
-      } else if (data.status === 'failed') {
-        addLog(`✗ Preparation failed: ${data.error || 'Unknown error'}`)
-        stopPolling()
-        stopProfilesPolling()
+      if (
+        data.status === "completed" ||
+        data.status === "ready" ||
+        data.already_prepared
+      ) {
+        addLog("✓ Preparation work completed");
+        stopPolling();
+        stopProfilesPolling();
+        await loadPreparedData();
+      } else if (data.status === "failed") {
+        addLog(`✗ Preparation failed: ${data.error || "Unknown error"}`);
+        stopPolling();
+        stopProfilesPolling();
       }
     }
   } catch (err) {
-    console.warn('Polling status failed:', err)
+    console.warn("Polling status failed:", err);
   }
-}
+};
 
 const fetchProfilesRealtime = async () => {
-  if (!props.simulationId) return
-  
+  if (!props.simulationId) return;
+
   try {
-    const res = await getSimulationProfilesRealtime(props.simulationId, 'reddit')
-    
+    const res = await getSimulationProfilesRealtime(
+      props.simulationId,
+      "reddit",
+    );
+
     if (res.success && res.data) {
-      const prevCount = profiles.value.length
-      profiles.value = res.data.profiles || []
+      const prevCount = profiles.value.length;
+      profiles.value = res.data.profiles || [];
       // Only when API Update only when returning valid values，Avoid overwriting existing valid values
       if (res.data.total_expected) {
-        expectedTotal.value = res.data.total_expected
+        expectedTotal.value = res.data.total_expected;
       }
-      
+
       // Extract entity type
-      const types = new Set()
-      profiles.value.forEach(p => {
-        if (p.entity_type) types.add(p.entity_type)
-      })
-      entityTypes.value = Array.from(types)
-      
+      const types = new Set();
+      profiles.value.forEach((p) => {
+        if (p.entity_type) types.add(p.entity_type);
+      });
+      entityTypes.value = Array.from(types);
+
       // Output Profile Generation progress log（Only when quantity changes）
-      const currentCount = profiles.value.length
+      const currentCount = profiles.value.length;
       if (currentCount > 0 && currentCount !== lastLoggedProfileCount) {
-        lastLoggedProfileCount = currentCount
-        const total = expectedTotal.value || '?'
-        const latestProfile = profiles.value[currentCount - 1]
-        const profileName = latestProfile?.name || latestProfile?.username || `Agent_${currentCount}`
+        lastLoggedProfileCount = currentCount;
+        const total = expectedTotal.value || "?";
+        const latestProfile = profiles.value[currentCount - 1];
+        const profileName =
+          latestProfile?.name ||
+          latestProfile?.username ||
+          `Agent_${currentCount}`;
         if (currentCount === 1) {
-          addLog(`Start generationAgentPersona...`)
+          addLog(`Start generationAgentPersona...`);
         }
-        addLog(`→ AgentPersona ${currentCount}/${total}: ${profileName} (${latestProfile?.profession || 'Unknown Profession'})`)
-        
+        addLog(
+          `→ AgentPersona ${currentCount}/${total}: ${profileName} (${latestProfile?.profession || "Unknown Profession"})`,
+        );
+
         // If all generation is completed
         if (expectedTotal.value && currentCount >= expectedTotal.value) {
-          addLog(`✓ All (All) ${currentCount} NumberAgentPersona generation completed`)
+          addLog(
+            `✓ All (All) ${currentCount} NumberAgentPersona generation completed`,
+          );
         }
       }
     }
   } catch (err) {
-    console.warn('Get Profiles Failed:', err)
+    console.warn("Get Profiles Failed:", err);
   }
-}
+};
 
 // ConfigurationroundsInquiry
 const startConfigPolling = () => {
-  configTimer = setInterval(fetchConfigRealtime, 2000)
-}
+  configTimer = setInterval(fetchConfigRealtime, 2000);
+};
 
 const stopConfigPolling = () => {
   if (configTimer) {
-    clearInterval(configTimer)
-    configTimer = null
+    clearInterval(configTimer);
+    configTimer = null;
   }
-}
+};
 
 const fetchConfigRealtime = async () => {
-  if (!props.simulationId) return
-  
+  if (!props.simulationId) return;
+
   try {
-    const res = await getSimulationConfigRealtime(props.simulationId)
-    
+    const res = await getSimulationConfigRealtime(props.simulationId);
+
     if (res.success && res.data) {
-      const data = res.data
-      
+      const data = res.data;
+
       // Output configuration generation phase log（Avoid duplication）
-      if (data.generation_stage && data.generation_stage !== lastLoggedConfigStage) {
-        lastLoggedConfigStage = data.generation_stage
-        if (data.generation_stage === 'generating_profiles') {
-          addLog('CurrentlyGenerateAgentPersona Configuration...')
-        } else if (data.generation_stage === 'generating_config') {
-          addLog('CallingLLMGenerate Simulation ConfigurationParameter...')
+      if (
+        data.generation_stage &&
+        data.generation_stage !== lastLoggedConfigStage
+      ) {
+        lastLoggedConfigStage = data.generation_stage;
+        if (data.generation_stage === "generating_profiles") {
+          addLog("CurrentlyGenerateAgentPersona Configuration...");
+        } else if (data.generation_stage === "generating_config") {
+          addLog("CallingLLMGenerate Simulation ConfigurationParameter...");
         }
       }
-      
+
       // If configuration is generated
       if (data.config_generated && data.config) {
-        simulationConfig.value = data.config
-        addLog('✓ Simulation configuration generation completed')
-        
+        simulationConfig.value = data.config;
+        addLog("✓ Simulation configuration generation completed");
+
         // Show detailed configuration summary
         if (data.summary) {
-          addLog(`  ├─ AgentQuantity: ${data.summary.total_agents}Number`)
-          addLog(`  ├─ Simulation Duration: ${data.summary.simulation_hours}hours`)
-          addLog(`  ├─ Initial posts: ${data.summary.initial_posts_count}items`)
-          addLog(`  ├─ Trending Topics: ${data.summary.hot_topics_count}Number`)
-          addLog(`  └─ Platform configuration: Twitter ${data.summary.has_twitter_config ? '✓' : '✗'}, Reddit ${data.summary.has_reddit_config ? '✓' : '✗'}`)
+          addLog(`  ├─ AgentQuantity: ${data.summary.total_agents}Number`);
+          addLog(
+            `  ├─ Simulation Duration: ${data.summary.simulation_hours}hours`,
+          );
+          addLog(
+            `  ├─ Initial posts: ${data.summary.initial_posts_count}items`,
+          );
+          addLog(
+            `  ├─ Trending Topics: ${data.summary.hot_topics_count}Number`,
+          );
+          addLog(
+            `  └─ Platform configuration: Twitter ${data.summary.has_twitter_config ? "✓" : "✗"}, Reddit ${data.summary.has_reddit_config ? "✓" : "✗"}`,
+          );
         }
-        
+
         // Show time configuration details
         if (data.config.time_config) {
-          const tc = data.config.time_config
-          addLog(`Time Configuration: Per round${tc.minutes_per_round}minutes, Total${Math.floor((tc.total_simulation_hours * 60) / tc.minutes_per_round)}rounds`)
+          const tc = data.config.time_config;
+          addLog(
+            `Time Configuration: Per round${tc.minutes_per_round}minutes, Total${Math.floor((tc.total_simulation_hours * 60) / tc.minutes_per_round)}rounds`,
+          );
         }
-        
+
         // Show event configuration
         if (data.config.event_config?.narrative_direction) {
-          const narrative = data.config.event_config.narrative_direction
-          addLog(`Narrative Direction: ${narrative.length > 50 ? narrative.substring(0, 50) + '...' : narrative}`)
+          const narrative = data.config.event_config.narrative_direction;
+          addLog(
+            `Narrative Direction: ${narrative.length > 50 ? narrative.substring(0, 50) + "..." : narrative}`,
+          );
         }
-        
-        stopConfigPolling()
-        phase.value = 4
-        addLog('✓ Env Setup Completed，Can start simulation')
-        emit('update-status', 'completed')
+
+        stopConfigPolling();
+        phase.value = 4;
+        addLog("✓ Env Setup Completed，Can start simulation");
+        emit("update-status", "completed");
       }
     }
   } catch (err) {
-    console.warn('Get Config Failed:', err)
+    console.warn("Get Config Failed:", err);
   }
-}
+};
 
 const loadPreparedData = async () => {
-  phase.value = 2
-  addLog('Loading existing configuration data...')
+  phase.value = 2;
+  addLog("Loading existing configuration data...");
 
   // Get one last time Profiles
-  await fetchProfilesRealtime()
-  addLog(`Loaded ${profiles.value.length} NumberAgentPersona`)
+  await fetchProfilesRealtime();
+  addLog(`Loaded ${profiles.value.length} NumberAgentPersona`);
 
   // Get configuration（Use real-time interface）
   try {
-    const res = await getSimulationConfigRealtime(props.simulationId)
+    const res = await getSimulationConfigRealtime(props.simulationId);
     if (res.success && res.data) {
       if (res.data.config_generated && res.data.config) {
-        simulationConfig.value = res.data.config
-        addLog('✓ Simulation configuration loaded successfully')
-        
+        simulationConfig.value = res.data.config;
+        addLog("✓ Simulation configuration loaded successfully");
+
         // Show detailed configuration summary
         if (res.data.summary) {
-          addLog(`  ├─ AgentQuantity: ${res.data.summary.total_agents}Number`)
-          addLog(`  ├─ Simulation Duration: ${res.data.summary.simulation_hours}hours`)
-          addLog(`  └─ Initial posts: ${res.data.summary.initial_posts_count}items`)
+          addLog(`  ├─ AgentQuantity: ${res.data.summary.total_agents}Number`);
+          addLog(
+            `  ├─ Simulation Duration: ${res.data.summary.simulation_hours}hours`,
+          );
+          addLog(
+            `  └─ Initial posts: ${res.data.summary.initial_posts_count}items`,
+          );
         }
-        
-        addLog('✓ Env Setup Completed，Can start simulation')
-        phase.value = 4
-        emit('update-status', 'completed')
+
+        addLog("✓ Env Setup Completed，Can start simulation");
+        phase.value = 4;
+        emit("update-status", "completed");
       } else {
         // Configuration not yet generated，Start polling
-        addLog('Configuration generating，Start polling wait...')
-        startConfigPolling()
+        addLog("Configuration generating，Start polling wait...");
+        startConfigPolling();
       }
     }
   } catch (err) {
-    addLog(`Failed to load configuration: ${err.message}`)
-    emit('update-status', 'error')
+    addLog(`Failed to load configuration: ${err.message}`);
+    emit("update-status", "error");
   }
-}
+};
 
 // Scroll log to bottom
-const logContent = ref(null)
-watch(() => props.systemLogs?.length, () => {
-  nextTick(() => {
-    if (logContent.value) {
-      logContent.value.scrollTop = logContent.value.scrollHeight
-    }
-  })
-})
+const logContent = ref(null);
+watch(
+  () => props.systemLogs?.length,
+  () => {
+    nextTick(() => {
+      if (logContent.value) {
+        logContent.value.scrollTop = logContent.value.scrollHeight;
+      }
+    });
+  },
+);
 
 onMounted(() => {
   // Automatically start preparation process
   if (props.simulationId) {
-    addLog('Step2 Env Setup Initialization')
-    startPrepareSimulation()
+    addLog("Step2 Env Setup Initialization");
+    startPrepareSimulation();
   }
-})
+});
 
 onUnmounted(() => {
-  stopPolling()
-  stopProfilesPolling()
-  stopConfigPolling()
-})
+  stopPolling();
+  stopProfilesPolling();
+  stopConfigPolling();
+});
 </script>
 
 <style scoped>
@@ -1085,8 +1677,8 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #FAFAFA;
-  font-family: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
+  background: #fafafa;
+  font-family: "Space Grotesk", "Noto Sans SC", system-ui, sans-serif;
 }
 
 .scroll-container {
@@ -1100,17 +1692,17 @@ onUnmounted(() => {
 
 /* Step Card */
 .step-card {
-  background: #FFF;
+  background: #fff;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  border: 1px solid #EAEAEA;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #eaeaea;
   transition: all 0.3s ease;
   position: relative;
 }
 
 .step-card.active {
-  border-color: #FF5722;
+  border-color: #ff5722;
   box-shadow: 0 4px 12px rgba(255, 87, 34, 0.08);
 }
 
@@ -1128,10 +1720,10 @@ onUnmounted(() => {
 }
 
 .step-num {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 20px;
   font-weight: 700;
-  color: #E0E0E0;
+  color: #e0e0e0;
 }
 
 .step-card.active .step-num,
@@ -1153,17 +1745,29 @@ onUnmounted(() => {
   text-transform: uppercase;
 }
 
-.badge.success { background: #E8F5E9; color: #2E7D32; }
-.badge.processing { background: #FF5722; color: #FFF; }
-.badge.pending { background: #F5F5F5; color: #999; }
-.badge.accent { background: #E3F2FD; color: #1565C0; }
+.badge.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.badge.processing {
+  background: #ff5722;
+  color: #fff;
+}
+.badge.pending {
+  background: #f5f5f5;
+  color: #999;
+}
+.badge.accent {
+  background: #e3f2fd;
+  color: #1565c0;
+}
 
 .card-content {
   /* No extra padding - uses step-card's padding */
 }
 
 .api-note {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 10px;
   color: #999;
   margin-bottom: 8px;
@@ -1196,7 +1800,7 @@ onUnmounted(() => {
 
 .action-btn.primary {
   background: #000;
-  color: #FFF;
+  color: #fff;
 }
 
 .action-btn.primary:hover:not(:disabled) {
@@ -1204,12 +1808,12 @@ onUnmounted(() => {
 }
 
 .action-btn.secondary {
-  background: #F5F5F5;
+  background: #f5f5f5;
   color: #333;
 }
 
 .action-btn.secondary:hover:not(:disabled) {
-  background: #E5E5E5;
+  background: #e5e5e5;
 }
 
 .action-btn:disabled {
@@ -1234,7 +1838,7 @@ onUnmounted(() => {
 
 /* Info Card */
 .info-card {
-  background: #F5F5F5;
+  background: #f5f5f5;
   border-radius: 6px;
   padding: 16px;
   margin-top: 16px;
@@ -1245,7 +1849,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px dashed #E0E0E0;
+  border-bottom: 1px dashed #e0e0e0;
 }
 
 .info-row:last-child {
@@ -1263,7 +1867,7 @@ onUnmounted(() => {
 }
 
 .info-value.mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 12px;
 }
 
@@ -1272,7 +1876,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
-  background: #F9F9F9;
+  background: #f9f9f9;
   padding: 16px;
   border-radius: 6px;
 }
@@ -1286,7 +1890,7 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 700;
   color: #000;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
 }
 
 .stat-label {
@@ -1300,7 +1904,7 @@ onUnmounted(() => {
 /* Profiles Preview */
 .profiles-preview {
   margin-top: 20px;
-  border-top: 1px solid #E5E5E5;
+  border-top: 1px solid #e5e5e5;
   padding-top: 16px;
 }
 
@@ -1333,17 +1937,17 @@ onUnmounted(() => {
 }
 
 .profiles-list::-webkit-scrollbar-thumb {
-  background: #DDD;
+  background: #ddd;
   border-radius: 2px;
 }
 
 .profiles-list::-webkit-scrollbar-thumb:hover {
-  background: #CCC;
+  background: #ccc;
 }
 
 .profile-card {
-  background: #FAFAFA;
-  border: 1px solid #E5E5E5;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
   border-radius: 6px;
   padding: 14px;
   cursor: pointer;
@@ -1352,7 +1956,7 @@ onUnmounted(() => {
 
 .profile-card:hover {
   border-color: #999;
-  background: #FFF;
+  background: #fff;
 }
 
 .profile-header {
@@ -1369,7 +1973,7 @@ onUnmounted(() => {
 }
 
 .profile-username {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
   color: #999;
 }
@@ -1381,7 +1985,7 @@ onUnmounted(() => {
 .profile-profession {
   font-size: 11px;
   color: #666;
-  background: #F0F0F0;
+  background: #f0f0f0;
   padding: 2px 8px;
   border-radius: 3px;
 }
@@ -1405,8 +2009,8 @@ onUnmounted(() => {
 
 .topic-tag {
   font-size: 10px;
-  color: #1565C0;
-  background: #E3F2FD;
+  color: #1565c0;
+  background: #e3f2fd;
   padding: 2px 8px;
   border-radius: 10px;
 }
@@ -1425,7 +2029,7 @@ onUnmounted(() => {
 
 .config-block {
   margin-top: 16px;
-  border-top: 1px solid #E5E5E5;
+  border-top: 1px solid #e5e5e5;
   padding-top: 12px;
 }
 
@@ -1451,9 +2055,9 @@ onUnmounted(() => {
 }
 
 .config-block-badge {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
-  background: #F1F5F9;
+  background: #f1f5f9;
   color: #475569;
   padding: 2px 8px;
   border-radius: 10px;
@@ -1467,7 +2071,7 @@ onUnmounted(() => {
 }
 
 .config-item {
-  background: #F9F9F9;
+  background: #f9f9f9;
   padding: 12px 14px;
   border-radius: 6px;
   display: flex;
@@ -1477,14 +2081,14 @@ onUnmounted(() => {
 
 .config-item-label {
   font-size: 11px;
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 .config-item-value {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 16px;
   font-weight: 600;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 /* Time Periods */
@@ -1500,30 +2104,30 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  background: #F9F9F9;
+  background: #f9f9f9;
   border-radius: 6px;
 }
 
 .period-label {
   font-size: 12px;
   font-weight: 500;
-  color: #64748B;
+  color: #64748b;
   min-width: 70px;
 }
 
 .period-hours {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
   color: #475569;
   flex: 1;
 }
 
 .period-multiplier {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
   font-weight: 600;
-  color: #6366F1;
-  background: #EEF2FF;
+  color: #6366f1;
+  background: #eef2ff;
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -1543,17 +2147,17 @@ onUnmounted(() => {
 }
 
 .agents-cards::-webkit-scrollbar-thumb {
-  background: #DDD;
+  background: #ddd;
   border-radius: 2px;
 }
 
 .agents-cards::-webkit-scrollbar-thumb:hover {
-  background: #CCC;
+  background: #ccc;
 }
 
 .agent-card {
-  background: #F9F9F9;
-  border: 1px solid #E5E5E5;
+  background: #f9f9f9;
+  border: 1px solid #e5e5e5;
   border-radius: 6px;
   padding: 14px;
   transition: all 0.2s ease;
@@ -1561,7 +2165,7 @@ onUnmounted(() => {
 
 .agent-card:hover {
   border-color: #999;
-  background: #FFF;
+  background: #fff;
 }
 
 /* Agent Card Header */
@@ -1571,7 +2175,7 @@ onUnmounted(() => {
   align-items: flex-start;
   margin-bottom: 14px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .agent-identity {
@@ -1581,15 +2185,15 @@ onUnmounted(() => {
 }
 
 .agent-id {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 10px;
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 .agent-name {
   font-size: 14px;
   font-weight: 600;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 .agent-tags {
@@ -1599,8 +2203,8 @@ onUnmounted(() => {
 
 .agent-type {
   font-size: 10px;
-  color: #64748B;
-  background: #F1F5F9;
+  color: #64748b;
+  background: #f1f5f9;
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -1614,23 +2218,23 @@ onUnmounted(() => {
 }
 
 .stance-neutral {
-  background: #F1F5F9;
-  color: #64748B;
+  background: #f1f5f9;
+  color: #64748b;
 }
 
 .stance-supportive {
-  background: #DCFCE7;
-  color: #16A34A;
+  background: #dcfce7;
+  color: #16a34a;
 }
 
 .stance-opposing {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .stance-observer {
-  background: #FEF3C7;
-  color: #D97706;
+  background: #fef3c7;
+  color: #d97706;
 }
 
 /* Agent Timeline */
@@ -1641,7 +2245,7 @@ onUnmounted(() => {
 .timeline-label {
   display: block;
   font-size: 10px;
-  color: #94A3B8;
+  color: #94a3b8;
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1651,29 +2255,29 @@ onUnmounted(() => {
   display: flex;
   gap: 2px;
   height: 16px;
-  background: #F8FAFC;
+  background: #f8fafc;
   border-radius: 4px;
   padding: 3px;
 }
 
 .timeline-hour {
   flex: 1;
-  background: #E2E8F0;
+  background: #e2e8f0;
   border-radius: 2px;
   transition: all 0.2s;
 }
 
 .timeline-hour.active {
-  background: linear-gradient(180deg, #6366F1, #818CF8);
+  background: linear-gradient(180deg, #6366f1, #818cf8);
 }
 
 .timeline-marks {
   display: flex;
   justify-content: space-between;
   margin-top: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 9px;
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 /* Agent Params */
@@ -1697,11 +2301,11 @@ onUnmounted(() => {
 
 .param-item .param-label {
   font-size: 10px;
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 .param-item .param-value {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 12px;
   font-weight: 600;
   color: #475569;
@@ -1715,26 +2319,26 @@ onUnmounted(() => {
 
 .mini-bar {
   height: 4px;
-  background: linear-gradient(90deg, #6366F1, #A855F7);
+  background: linear-gradient(90deg, #6366f1, #a855f7);
   border-radius: 2px;
   min-width: 4px;
   max-width: 40px;
 }
 
 .param-value.positive {
-  color: #16A34A;
+  color: #16a34a;
 }
 
 .param-value.negative {
-  color: #DC2626;
+  color: #dc2626;
 }
 
 .param-value.neutral {
-  color: #64748B;
+  color: #64748b;
 }
 
 .param-value.highlight {
-  color: #6366F1;
+  color: #6366f1;
 }
 
 /* Platforms Grid */
@@ -1745,7 +2349,7 @@ onUnmounted(() => {
 }
 
 .platform-card {
-  background: #F9F9F9;
+  background: #f9f9f9;
   padding: 14px;
   border-radius: 6px;
 }
@@ -1753,7 +2357,7 @@ onUnmounted(() => {
 .platform-card-header {
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #E5E5E5;
+  border-bottom: 1px solid #e5e5e5;
 }
 
 .platform-name {
@@ -1774,16 +2378,22 @@ onUnmounted(() => {
   align-items: center;
 }
 
+.edit-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .param-label {
   font-size: 12px;
-  color: #64748B;
+  color: #64748b;
 }
 
 .param-value {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 12px;
   font-weight: 600;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 /* Reasoning Content */
@@ -1795,7 +2405,7 @@ onUnmounted(() => {
 
 .reasoning-item {
   padding: 12px 14px;
-  background: #F9F9F9;
+  background: #f9f9f9;
   border-radius: 6px;
 }
 
@@ -1822,7 +2432,7 @@ onUnmounted(() => {
 }
 
 .profile-modal {
-  background: #FFF;
+  background: #fff;
   border-radius: 16px;
   width: 90%;
   max-width: 600px;
@@ -1838,8 +2448,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 24px;
-  background: #FFF;
-  border-bottom: 1px solid #F0F0F0;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .modal-header-info {
@@ -1860,7 +2470,7 @@ onUnmounted(() => {
 }
 
 .modal-username {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 13px;
   color: #999;
 }
@@ -1868,7 +2478,7 @@ onUnmounted(() => {
 .modal-profession {
   font-size: 12px;
   color: #666;
-  background: #F5F5F5;
+  background: #f5f5f5;
   padding: 4px 10px;
   border-radius: 4px;
   display: inline-block;
@@ -1934,8 +2544,8 @@ onUnmounted(() => {
 }
 
 .info-value.mbti {
-  font-family: 'JetBrains Mono', monospace;
-  color: #FF5722;
+  font-family: "JetBrains Mono", monospace;
+  color: #ff5722;
 }
 
 /* Module area */
@@ -1959,9 +2569,9 @@ onUnmounted(() => {
   line-height: 1.6;
   margin: 0;
   padding: 16px;
-  background: #F9F9F9;
+  background: #f9f9f9;
   border-radius: 6px;
-  border-left: 3px solid #E0E0E0;
+  border-left: 3px solid #e0e0e0;
 }
 
 /* Topic Tag */
@@ -1973,8 +2583,8 @@ onUnmounted(() => {
 
 .topic-item {
   font-size: 11px;
-  color: #1565C0;
-  background: #E3F2FD;
+  color: #1565c0;
+  background: #e3f2fd;
   padding: 4px 10px;
   border-radius: 12px;
   transition: all 0.2s;
@@ -1982,8 +2592,8 @@ onUnmounted(() => {
 }
 
 .topic-item:hover {
-  background: #BBDEFB;
-  color: #0D47A1;
+  background: #bbdefb;
+  color: #0d47a1;
 }
 
 /* Detailed Persona */
@@ -1995,15 +2605,15 @@ onUnmounted(() => {
 }
 
 .dimension-card {
-  background: #F8F9FA;
+  background: #f8f9fa;
   padding: 12px;
   border-radius: 6px;
-  border-left: 3px solid #DDD;
+  border-left: 3px solid #ddd;
   transition: all 0.2s;
 }
 
 .dimension-card:hover {
-  background: #F0F0F0;
+  background: #f0f0f0;
   border-left-color: #999;
 }
 
@@ -2036,7 +2646,7 @@ onUnmounted(() => {
 }
 
 .persona-content::-webkit-scrollbar-thumb {
-  background: #DDD;
+  background: #ddd;
   border-radius: 2px;
 }
 
@@ -2051,9 +2661,9 @@ onUnmounted(() => {
 /* System Logs */
 .system-logs {
   background: #000;
-  color: #DDD;
+  color: #ddd;
   padding: 16px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   border-top: 1px solid #222;
   flex-shrink: 0;
 }
@@ -2099,7 +2709,7 @@ onUnmounted(() => {
 }
 
 .log-msg {
-  color: #CCC;
+  color: #ccc;
   word-break: break-all;
 }
 
@@ -2107,14 +2717,16 @@ onUnmounted(() => {
 .spinner-sm {
   width: 16px;
   height: 16px;
-  border: 2px solid #E5E5E5;
-  border-top-color: #FF5722;
+  border: 2px solid #e5e5e5;
+  border-top-color: #ff5722;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 /* Orchestration Content */
 .orchestration-content {
@@ -2135,11 +2747,11 @@ onUnmounted(() => {
 }
 
 .narrative-box {
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 20px 24px;
   border-radius: 12px;
-  border: 1px solid #EEF2F6;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.03);
+  border: 1px solid #eef2f6;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
   transition: all 0.3s ease;
 }
 
@@ -2164,7 +2776,7 @@ onUnmounted(() => {
 }
 
 .narrative-text {
-  font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+  font-family: "Inter", "Noto Sans SC", system-ui, sans-serif;
   font-size: 14px;
   color: #334155;
   line-height: 1.8;
@@ -2174,7 +2786,7 @@ onUnmounted(() => {
 }
 
 .topics-section {
-  background: #FFF;
+  background: #fff;
 }
 
 .hot-topics-grid {
@@ -2185,8 +2797,8 @@ onUnmounted(() => {
 
 .hot-topic-tag {
   font-size: 12px;
-  color:rgba(255, 86, 34, 0.88);
-  background: #FFF3E0;
+  color: rgba(255, 86, 34, 0.88);
+  background: #fff3e0;
   padding: 4px 10px;
   border-radius: 12px;
   font-weight: 500;
@@ -2199,7 +2811,7 @@ onUnmounted(() => {
 }
 
 .initial-posts-section {
-  border-top: 1px solid #EAEAEA;
+  border-top: 1px solid #eaeaea;
   padding-top: 16px;
 }
 
@@ -2208,7 +2820,7 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 16px;
   padding-left: 8px;
-  border-left: 2px solid #F0F0F0;
+  border-left: 2px solid #f0f0f0;
   margin-top: 12px;
 }
 
@@ -2223,14 +2835,14 @@ onUnmounted(() => {
   top: 14px;
   width: 12px;
   height: 2px;
-  background: #DDD;
+  background: #ddd;
 }
 
 .timeline-content {
-  background: #F9F9F9;
+  background: #f9f9f9;
   padding: 12px;
   border-radius: 6px;
-  border: 1px solid #EEE;
+  border: 1px solid #eee;
 }
 
 .post-header {
@@ -2254,7 +2866,7 @@ onUnmounted(() => {
 
 .post-id,
 .post-username {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 10px;
   color: #666;
   line-height: 1;
@@ -2276,7 +2888,7 @@ onUnmounted(() => {
 .rounds-config-section {
   margin: 24px 0;
   padding-top: 24px;
-  border-top: 1px solid #EAEAEA;
+  border-top: 1px solid #eaeaea;
 }
 
 .rounds-header {
@@ -2295,19 +2907,19 @@ onUnmounted(() => {
 .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 .section-desc {
   font-size: 12px;
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 .desc-highlight {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-weight: 600;
-  color: #1E293B;
-  background: #F1F5F9;
+  color: #1e293b;
+  background: #f1f5f9;
   padding: 1px 6px;
   border-radius: 4px;
   margin: 0 2px;
@@ -2325,7 +2937,7 @@ onUnmounted(() => {
 }
 
 .switch-control:hover {
-  background: #F8FAFC;
+  background: #f8fafc;
 }
 
 .switch-control input {
@@ -2335,23 +2947,23 @@ onUnmounted(() => {
 .switch-track {
   width: 36px;
   height: 20px;
-  background: #E2E8F0;
+  background: #e2e8f0;
   border-radius: 10px;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .switch-track::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 2px;
   top: 2px;
   width: 16px;
   height: 16px;
-  background: #FFF;
+  background: #fff;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .switch-control input:checked + .switch-track {
@@ -2365,11 +2977,11 @@ onUnmounted(() => {
 .switch-label {
   font-size: 12px;
   font-weight: 500;
-  color: #64748B;
+  color: #64748b;
 }
 
 .switch-control input:checked ~ .switch-label {
-  color: #1E293B;
+  color: #1e293b;
 }
 
 /* Slider Content */
@@ -2391,7 +3003,7 @@ onUnmounted(() => {
 }
 
 .val-num {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 24px;
   font-weight: 700;
   color: #000;
@@ -2404,10 +3016,10 @@ onUnmounted(() => {
 }
 
 .slider-meta-info {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
-  color: #64748B;
-  background: #F1F5F9;
+  color: #64748b;
+  background: #f1f5f9;
   padding: 4px 8px;
   border-radius: 4px;
 }
@@ -2421,7 +3033,7 @@ onUnmounted(() => {
   -webkit-appearance: none;
   width: 100%;
   height: 4px;
-  background: #E2E8F0;
+  background: #e2e8f0;
   border-radius: 2px;
   outline: none;
   background-image: linear-gradient(#000, #000);
@@ -2435,10 +3047,10 @@ onUnmounted(() => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #FFF;
+  background: #fff;
   border: 2px solid #000;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.1s;
   margin-top: -6px; /* Center thumb */
 }
@@ -2456,9 +3068,9 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 10px;
-  color: #94A3B8;
+  color: #94a3b8;
   position: relative;
 }
 
@@ -2478,14 +3090,14 @@ onUnmounted(() => {
 }
 
 .mark-recommend::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
   width: 1px;
   height: 4px;
-  background: #CBD5E1;
+  background: #cbd5e1;
 }
 
 /* Auto Info */
@@ -2493,7 +3105,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 24px;
-  background: #F8FAFC;
+  background: #f8fafc;
   padding: 16px 20px;
   border-radius: 8px;
 }
@@ -2504,7 +3116,7 @@ onUnmounted(() => {
   align-items: baseline;
   gap: 4px;
   padding-right: 24px;
-  border-right: 1px solid #E2E8F0;
+  border-right: 1px solid #e2e8f0;
 }
 
 .auto-content {
@@ -2524,15 +3136,15 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
   font-weight: 500;
-  color: #64748B;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  color: #64748b;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   padding: 3px 8px;
   border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .auto-desc {
@@ -2544,7 +3156,7 @@ onUnmounted(() => {
 .auto-desc p {
   margin: 0;
   font-size: 13px;
-  color: #64748B;
+  color: #64748b;
   line-height: 1.5;
 }
 
@@ -2561,8 +3173,14 @@ onUnmounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fade-enter-active,
