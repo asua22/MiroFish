@@ -517,7 +517,7 @@ class OasisProfileGenerator:
                 logger.warning(f"LLM call failed (attempt {attempt+1}): {str(e)[:80]}")
                 last_error = e
                 import time
-                time.sleep(1 * (attempt + 1))  # Exponential backoff
+                time.sleep(10 * (attempt + 1))  # Exponential backoff
 
         logger.warning(f"LLM persona generation failed ({max_attempts} attempts): {last_error}, using rule-based generation")
         return self._generate_profile_rule_based(

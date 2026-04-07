@@ -7,6 +7,7 @@ entities and relations from text chunks, guided by the graph's ontology.
 """
 
 import logging
+import time
 from typing import Dict, Any, List, Optional
 
 from ..utils.llm_client import LLMClient
@@ -46,7 +47,7 @@ _USER_PROMPT = """Extract entities and relations from the following text:
 class NERExtractor:
     """Extract entities and relations from text using local LLM."""
 
-    def __init__(self, llm_client: Optional[LLMClient] = None, max_retries: int = 2):
+    def __init__(self, llm_client: Optional[LLMClient] = None, max_retries: int = 6):
         self.llm = llm_client or LLMClient()
         self.max_retries = max_retries
 
@@ -97,6 +98,12 @@ class NERExtractor:
                 logger.error(f"NER extraction error: {e}")
                 if attempt >= self.max_retries:
                     break
+                if "429" in str(e):
+                    wait = 5 * (attempt + 1)  # respetar el rate limit: 40 rpm
+                    logger.warning(f"Rate limit alcanzado, esperando {wait}s...")
+                else:
+                    wait = 5 * (attempt + 1)  # otros errores: espera progresiva
+                time.sleep(wait)
 
         logger.error(
             f"NER extraction failed after {self.max_retries + 1} attempts: {last_error}"
