@@ -8,6 +8,38 @@ from typing import Dict, Any, List, Optional
 from ..utils.llm_client import LLMClient
 
 
+# JSON Schema para constrained decoding de ontología
+# Simplified for Ollama GBNF compatibility (Rama A)
+ONTOLOGY_OUTPUT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "entity_types": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "description": {"type": "string"}
+                },
+                "required": ["name", "description"]
+            }
+        },
+        "edge_types": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "description": {"type": "string"}
+                },
+                "required": ["name", "description"]
+            }
+        },
+        "analysis_summary": {"type": "string"}
+    },
+    "required": ["entity_types", "edge_types", "analysis_summary"]
+}
+
 # System prompt for ontology generation
 ONTOLOGY_SYSTEM_PROMPT = """You are a professional knowledge graph ontology design expert. Your task is to analyze given text content and simulation requirements, and design entity types and relationship types suitable for **social media opinion simulation**.
 
@@ -197,8 +229,10 @@ class OntologyGenerator:
         result = self.llm_client.chat_json(
             messages=messages,
             temperature=0.3,
-            max_tokens=4096
+            max_tokens=4096,
+            json_schema=ONTOLOGY_OUTPUT_SCHEMA
         )
+
 
         # Validate and post-process
         result = self._validate_and_process(result)
@@ -253,7 +287,7 @@ Based on the above content, design entity types and relationship types suitable 
 """
 
         return message
-    
+
     def _validate_and_process(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and post-process result"""
 
@@ -343,7 +377,7 @@ Based on the above content, design entity types and relationship types suitable 
             result["edge_types"] = result["edge_types"][:MAX_EDGE_TYPES]
 
         return result
-    
+
     def generate_python_code(self, ontology: Dict[str, Any]) -> str:
         """
         [DEPRECATED] Convert ontology definition to Zep-format Pydantic code.
@@ -446,4 +480,3 @@ Based on the above content, design entity types and relationship types suitable 
         code_lines.append('}')
 
         return '\n'.join(code_lines)
-
