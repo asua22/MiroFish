@@ -822,9 +822,9 @@ def _get_report_id_for_simulation(simulation_id: str) -> str:
     import json
     from datetime import datetime
     
-    # reports Directory path：backend/uploads/reports
+    # reports Directory path：backend/data/uploads/reports
     # __file__ Is app/api/simulation.py，Need to go up two levels to backend/
-    reports_dir = os.path.join(os.path.dirname(__file__), '../../uploads/reports')
+    reports_dir = os.path.join(os.path.dirname(__file__), '../../data/uploads/reports')
     if not os.path.exists(reports_dir):
         return None
     
@@ -1998,7 +1998,7 @@ def get_simulation_posts(simulation_id: str):
         
         sim_dir = os.path.join(
             os.path.dirname(__file__),
-            f'../../uploads/simulations/{simulation_id}'
+            f'../../data/uploads/simulations/{simulation_id}'
         )
         
         db_file = f"{platform}_simulation.db"
@@ -2074,7 +2074,7 @@ def get_simulation_comments(simulation_id: str):
         
         sim_dir = os.path.join(
             os.path.dirname(__file__),
-            f'../../uploads/simulations/{simulation_id}'
+            f'../../data/uploads/simulations/{simulation_id}'
         )
         
         db_path = os.path.join(sim_dir, "reddit_simulation.db")

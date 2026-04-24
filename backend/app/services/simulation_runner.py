@@ -206,7 +206,7 @@ class SimulationRunner:
     # Storage directory for run state
     RUN_STATE_DIR = os.path.join(
         os.path.dirname(__file__),
-        '../../uploads/simulations'
+        '../../data/uploads/simulations'
     )
     
     # Script directory

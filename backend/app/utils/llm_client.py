@@ -201,7 +201,14 @@ class LLMClient:
                 try:
                     return json.loads(cleaned_response)
                 except json.JSONDecodeError:
-                    raise ValueError(f"Invalid JSON format from LLM: {cleaned_response}")
+                    # Intenta extraer JSON de respuesta que contiene markdown
+                    json_match = re.search(r'\{[\s\S]*\}', cleaned_response)
+                    if json_match:
+                        try:
+                            return json.loads(json_match.group())
+                        except json.JSONDecodeError:
+                            pass
+                    raise ValueError(f"Invalid JSON format from LLM: {cleaned_response[:200]}")
 
         # Rama B: OpenAI-compatible + Schema (structured outputs via response_format)
         elif json_schema:
@@ -231,7 +238,14 @@ class LLMClient:
             try:
                 return json.loads(cleaned_response)
             except json.JSONDecodeError:
-                raise ValueError(f"Invalid JSON format from LLM: {cleaned_response}")
+                # Intenta extraer JSON de respuesta que contiene markdown
+                json_match = re.search(r'\{[\s\S]*\}', cleaned_response)
+                if json_match:
+                    try:
+                        return json.loads(json_match.group())
+                    except json.JSONDecodeError:
+                        pass
+                raise ValueError(f"Invalid JSON format from LLM: {cleaned_response[:200]}")
 
     def _chat_json_native_ollama(
         self,

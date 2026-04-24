@@ -11,7 +11,7 @@ services:
       - "5001:5001"
     restart: unless-stopped
     volumes:
-      - ./backend/uploads:/app/backend/uploads
+      - ./backend/data:/app/backend/data
     depends_on:
       neo4j:
         condition: service_healthy

@@ -361,7 +361,10 @@
                     <div class="param-group">
                       <div class="param-item">
                         <span class="param-label">Post/time</span>
-                        <span v-if="editingAgentId[agent.agent_id]" class="edit-field">
+                        <span
+                          v-if="editingAgentId[agent.agent_id]"
+                          class="edit-field"
+                        >
                           <input
                             v-model.number="agent.posts_per_hour"
                             type="number"
@@ -369,7 +372,9 @@
                             min="0"
                             style="width: 50px"
                           />
-                          <span style="font-size: 11px; color: #888">(0 - 50)</span>
+                          <span style="font-size: 11px; color: #888"
+                            >(0 - 50)</span
+                          >
                         </span>
                         <span v-else class="param-value">{{
                           Array.isArray(agent.posts_per_hour)
@@ -379,7 +384,10 @@
                       </div>
                       <div class="param-item">
                         <span class="param-label">Comment/time</span>
-                        <span v-if="editingAgentId[agent.agent_id]" class="edit-field">
+                        <span
+                          v-if="editingAgentId[agent.agent_id]"
+                          class="edit-field"
+                        >
                           <input
                             v-model.number="agent.comments_per_hour"
                             type="number"
@@ -387,7 +395,9 @@
                             min="0"
                             style="width: 50px"
                           />
-                          <span style="font-size: 11px; color: #888">(0 - 50)</span>
+                          <span style="font-size: 11px; color: #888"
+                            >(0 - 50)</span
+                          >
                         </span>
                         <span v-else class="param-value">{{
                           Array.isArray(agent.comments_per_hour)
@@ -417,7 +427,10 @@
                       </div>
                       <div class="param-item">
                         <span class="param-label">Sentiment tendency</span>
-                        <span v-if="editingAgentId[agent.agent_id]" class="edit-field">
+                        <span
+                          v-if="editingAgentId[agent.agent_id]"
+                          class="edit-field"
+                        >
                           <input
                             v-model.number="agent.sentiment_bias"
                             type="number"
@@ -426,7 +439,9 @@
                             max="1"
                             style="width: 55px"
                           />
-                          <span style="font-size: 11px; color: #888">(-1.0 - 1.0)</span>
+                          <span style="font-size: 11px; color: #888"
+                            >(-1.0 - 1.0)</span
+                          >
                         </span>
                         <span
                           v-else
@@ -445,7 +460,10 @@
                       </div>
                       <div class="param-item">
                         <span class="param-label">Influence</span>
-                        <span v-if="editingAgentId[agent.agent_id]" class="edit-field">
+                        <span
+                          v-if="editingAgentId[agent.agent_id]"
+                          class="edit-field"
+                        >
                           <input
                             v-model.number="agent.influence_weight"
                             type="number"
@@ -454,7 +472,9 @@
                             max="5"
                             style="width: 50px"
                           />
-                          <span style="font-size: 11px; color: #888">(0 - 5)</span>
+                          <span style="font-size: 11px; color: #888"
+                            >(0 - 5)</span
+                          >
                         </span>
                         <span v-else class="param-value highlight">{{
                           agent.influence_weight?.toFixed(1)
@@ -501,14 +521,18 @@
                       <span class="param-label">Time weight</span>
                       <span v-if="editingTwitter" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.twitter_config.recency_weight"
+                          v-model.number="
+                            simulationConfig.twitter_config.recency_weight
+                          "
                           type="number"
                           step="0.1"
                           min="0"
                           max="1"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 1)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.twitter_config.recency_weight
@@ -518,14 +542,18 @@
                       <span class="param-label">Popularity weight</span>
                       <span v-if="editingTwitter" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.twitter_config.popularity_weight"
+                          v-model.number="
+                            simulationConfig.twitter_config.popularity_weight
+                          "
                           type="number"
                           step="0.1"
                           min="0"
                           max="1"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 1)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.twitter_config.popularity_weight
@@ -535,14 +563,18 @@
                       <span class="param-label">Relevance weight</span>
                       <span v-if="editingTwitter" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.twitter_config.relevance_weight"
+                          v-model.number="
+                            simulationConfig.twitter_config.relevance_weight
+                          "
                           type="number"
                           step="0.1"
                           min="0"
                           max="1"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 1)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.twitter_config.relevance_weight
@@ -552,14 +584,18 @@
                       <span class="param-label">Virus threshold</span>
                       <span v-if="editingTwitter" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.twitter_config.viral_threshold"
+                          v-model.number="
+                            simulationConfig.twitter_config.viral_threshold
+                          "
                           type="number"
                           step="1"
                           min="0"
                           max="100"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 100)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 100)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.twitter_config.viral_threshold
@@ -569,14 +605,19 @@
                       <span class="param-label">Echo chamber strength</span>
                       <span v-if="editingTwitter" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.twitter_config.echo_chamber_strength"
+                          v-model.number="
+                            simulationConfig.twitter_config
+                              .echo_chamber_strength
+                          "
                           type="number"
                           step="0.1"
                           min="0"
                           max="1"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 1)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.twitter_config.echo_chamber_strength
@@ -611,14 +652,18 @@
                       <span class="param-label">Time weight</span>
                       <span v-if="editingReddit" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.reddit_config.recency_weight"
+                          v-model.number="
+                            simulationConfig.reddit_config.recency_weight
+                          "
                           type="number"
                           step="0.1"
                           min="0"
                           max="1"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 1)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.reddit_config.recency_weight
@@ -628,14 +673,18 @@
                       <span class="param-label">Popularity weight</span>
                       <span v-if="editingReddit" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.reddit_config.popularity_weight"
+                          v-model.number="
+                            simulationConfig.reddit_config.popularity_weight
+                          "
                           type="number"
                           step="0.1"
                           min="0"
                           max="1"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 1)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.reddit_config.popularity_weight
@@ -645,14 +694,18 @@
                       <span class="param-label">Relevance weight</span>
                       <span v-if="editingReddit" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.reddit_config.relevance_weight"
+                          v-model.number="
+                            simulationConfig.reddit_config.relevance_weight
+                          "
                           type="number"
                           step="0.1"
                           min="0"
                           max="1"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 1)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.reddit_config.relevance_weight
@@ -662,14 +715,18 @@
                       <span class="param-label">Virus threshold</span>
                       <span v-if="editingReddit" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.reddit_config.viral_threshold"
+                          v-model.number="
+                            simulationConfig.reddit_config.viral_threshold
+                          "
                           type="number"
                           step="1"
                           min="0"
                           max="100"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 100)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 100)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.reddit_config.viral_threshold
@@ -679,14 +736,18 @@
                       <span class="param-label">Echo chamber strength</span>
                       <span v-if="editingReddit" class="edit-field">
                         <input
-                          v-model.number="simulationConfig.reddit_config.echo_chamber_strength"
+                          v-model.number="
+                            simulationConfig.reddit_config.echo_chamber_strength
+                          "
                           type="number"
                           step="0.1"
                           min="0"
                           max="1"
                           style="width: 55px"
                         />
-                        <span style="font-size: 11px; color: #888">(0 - 1)</span>
+                        <span style="font-size: 11px; color: #888"
+                          >(0 - 1)</span
+                        >
                       </span>
                       <span v-else class="param-value">{{
                         simulationConfig.reddit_config.echo_chamber_strength
@@ -998,6 +1059,13 @@
               @click="handleStartSimulation"
             >
               Start dual world parallel simulation ➝
+            </button>
+            <button
+              class="action-btn secondary"
+              :disabled="phase < 4"
+              @click="regenerateProfiles"
+            >
+              Regenerate profiles
             </button>
           </div>
         </div>
@@ -1370,6 +1438,23 @@ const startPrepareSimulation = async () => {
   } catch (err) {
     addLog(`Preparation exception: ${err.message}`);
     emit("update-status", "error");
+  }
+};
+
+const regenerateProfiles = async () => {
+  addLog("Regenerating profiles with LLM...");
+  emit("update-status", "processing");
+  const res = await prepareSimulation({
+    simulation_id: props.simulationId,
+    use_llm_for_profiles: true,
+    parallel_profile_count: 5,
+    force_regenerate: true,
+  });
+  if (res.success && res.data) {
+    taskId.value = res.data.task_id;
+    addLog(`Tarea de regeneración iniciada: ${res.data.task_id}`);
+  } else {
+    addLog(`Error al regenerar: ${res.error || "Unknown error"}`);
   }
 };
 

@@ -1285,7 +1285,7 @@ Return the sub-questions as a JSON list."""
 
         sim_dir = os.path.join(
             os.path.dirname(__file__),
-            f'../../uploads/simulations/{simulation_id}'
+            f'../../data/uploads/simulations/{simulation_id}'
         )
 
         profiles = []

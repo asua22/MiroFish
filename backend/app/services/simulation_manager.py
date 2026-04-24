@@ -124,8 +124,8 @@ class SimulationManager:
     
     # Simulation data storage directory
     SIMULATION_DATA_DIR = os.path.join(
-        os.path.dirname(__file__), 
-        '../../uploads/simulations'
+        os.path.dirname(__file__),
+        '../../data/uploads/simulations'
     )
     
     def __init__(self):

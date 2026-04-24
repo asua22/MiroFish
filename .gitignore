@@ -9,6 +9,8 @@ Thumbs.db
 .env.development
 .env.test
 .env.production
+# Runtime LLM config — contains API keys, must not be committed
+runtime_llm_config.json
 
 # Python
 __pycache__/
@@ -49,12 +51,9 @@ htmlcov/
 mydoc/
 mytest/
 
-# 日志文件
-backend/logs/
+# Data directory (logs, uploads, simulations)
+backend/data/
 *.log
-
-# 上传文件
-backend/uploads/
 
 # Docker 数据
 data/backend/venv311/

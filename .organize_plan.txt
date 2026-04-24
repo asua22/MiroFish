@@ -1,0 +1,30 @@
+PLAN DE REORGANIZACIÓN:
+======================
+
+ESTRUCTURA ACTUAL:
+- backend/logs/
+- backend/uploads/
+  - projects/
+  - reports/
+  - simulations/
+- backend/scripts/
+- backend/app/
+
+NUEVA ESTRUCTURA:
+- backend/data/
+  - logs/
+  - uploads/
+    - projects/
+    - reports/
+    - simulations/
+- backend/scripts/ (sin cambios, solo referencia actualizada)
+- backend/tests/ (si hay tests sueltos, mover aquí)
+
+ARCHIVOS A ACTUALIZAR:
+1. backend/app/config.py - Rutas de UPLOAD_FOLDER, OASIS_SIMULATION_DATA_DIR
+2. backend/app/utils/logger.py - Ruta de LOG_DIR
+3. backend/app/api/simulation.py - Rutas de reports_dir, scripts_dir
+4. backend/app/services/simulation_manager.py - Ruta de scripts_dir
+5. docker-compose.yml - Volumen de uploads
+6. .gitignore - Rutas de datos
+
