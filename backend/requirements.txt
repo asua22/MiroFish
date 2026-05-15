@@ -35,3 +35,16 @@ python-dotenv>=1.0.0
 
 # 数据验证
 pydantic>=2.0.0
+
+# ============= Data Ingestion - Web Scraping =============
+# LLM-based web scraper with structured data extraction
+scrapegraphai>=1.25.0
+
+# Async web crawler for HTML-to-Markdown conversion
+crawl4ai>=0.4.0
+
+# Async HTTP client
+aiohttp>=3.9.0
+
+# Async utilities
+asyncio-contextmanager>=1.0.0

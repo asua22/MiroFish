@@ -128,11 +128,17 @@
             </div>
 
             <div :style="s.btnSection">
-              <button :style="s.startEngineBtn" @click="startSimulation" :disabled="!canSubmit || loading">
-                <span v-if="!loading">Start Engine</span>
-                <span v-else>Initializing...</span>
-                <span>→</span>
-              </button>
+              <div :style="s.btnGroup">
+                <button :style="s.startEngineBtn" @click="startSimulation" :disabled="!canSubmit || loading">
+                  <span v-if="!loading">Start Engine</span>
+                  <span v-else>Initializing...</span>
+                  <span>→</span>
+                </button>
+                <button :style="s.extractDataBtn" @click="goToExtraction">
+                  <span>Extract from Twitter/News</span>
+                  <span>𝕏</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -214,6 +220,8 @@ const s = reactive({
   codeInput: { width: '100%', border: 'none', background: 'transparent', padding: '20px', fontFamily: mono, fontSize: '0.9rem', lineHeight: '1.6', resize: 'vertical', outline: 'none', minHeight: '150px' },
   modelBadge: { position: 'absolute', bottom: '10px', right: '15px', fontFamily: mono, fontSize: '0.7rem', color: '#AAA' },
   btnSection: { padding: '0 20px 20px' },
+  btnGroup: { display: 'flex', gap: '12px', flexDirection: 'column' },
+  extractDataBtn: { width: '100%', background: '#000', color: '#fff', border: 'none', padding: '20px', fontFamily: mono, fontWeight: '700', fontSize: '1.1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', letterSpacing: '1px', transition: 'all 0.3s ease' },
   startEngineBtn: { width: '100%', background: '#000', color: '#fff', border: 'none', padding: '20px', fontFamily: mono, fontWeight: '700', fontSize: '1.1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', letterSpacing: '1px' },
 })
 
@@ -254,6 +262,17 @@ const removeFile = (index) => { files.value.splice(index, 1) }
 
 const scrollToBottom = () => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }) }
 
+const goToExtraction = () => {
+  if (files.value.length > 0 || formData.value.simulationRequirement.trim() !== '') {
+    import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
+      setPendingUpload(files.value, formData.value.simulationRequirement)
+      router.push({ name: 'Process', params: { projectId: 'new' } })
+    })
+  } else {
+    router.push({ name: 'Process', params: { projectId: 'new' } })
+  }
+}
+
 const startSimulation = () => {
   if (!canSubmit.value || loading.value) return
   import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
@@ -262,5 +281,19 @@ const startSimulation = () => {
   })
 }
 </script>
+
+<style scoped>
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+</style>
 
 <!-- Styles loaded from Home.css via import -->

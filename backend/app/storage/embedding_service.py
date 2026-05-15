@@ -36,7 +36,7 @@ class EmbeddingService:
         # Simple in-memory cache (text -> embedding vector)
         # Using dict instead of lru_cache because lists aren't hashable
         self._cache: dict[str, List[float]] = {}
-        self._cache_max_size = 2000
+        self._cache_max_size = 500
 
     def embed(self, text: str) -> List[float]:
         """

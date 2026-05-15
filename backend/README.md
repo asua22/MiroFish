@@ -1,292 +1,205 @@
-# MiroFish Backend
+<div align="center">
 
-REST API backend for MiroFish knowledge graph generation system.
+<img src="./static/image/mirofish-offline-banner.png" alt="MiroFish Offline" width="100%"/>
 
-## Features
+# MiroFish-Offline
 
-- **Multiple LLM Providers**: Ollama, OpenAI, and OpenAI-compatible APIs
-- **Structured Output (JSON Schema)**: Intelligent routing for guaranteed JSON output
-- **Context Window Management**: Automatic handling of large documents
-- **Graph Generation**: Create knowledge graphs from documents with entity and relationship extraction
+**Fully local fork of [MiroFish](https://github.com/666ghj/MiroFish) — no cloud APIs required. English UI.**
+
+*A multi-agent swarm intelligence engine that simulates public opinion, market sentiment, and social dynamics. Entirely on your hardware.*
+
+[![GitHub Stars](https://img.shields.io/github/stars/nikmcfly/MiroFish-Offline?style=flat-square&color=DAA520)](https://github.com/nikmcfly/MiroFish-Offline/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/nikmcfly/MiroFish-Offline?style=flat-square)](https://github.com/nikmcfly/MiroFish-Offline/network)
+[![Docker](https://img.shields.io/badge/Docker-Build-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)](./LICENSE)
+
+</div>
+
+## What is this?
+
+MiroFish is a multi-agent simulation engine: upload any document (press release, policy draft, financial report), and it generates hundreds of AI agents with unique personalities that simulate the public reaction on social media. Posts, arguments, opinion shifts — hour by hour.
+
+The [original MiroFish](https://github.com/666ghj/MiroFish) was built for the Chinese market (Chinese UI, Zep Cloud for knowledge graphs, DashScope API). This fork makes it **fully local and fully English**:
+
+| Original MiroFish | MiroFish-Offline |
+|---|---|
+| Chinese UI | **English UI** (1,000+ strings translated) |
+| Zep Cloud (graph memory) | **Neo4j Community Edition 5.15** |
+| DashScope / OpenAI API (LLM) | **Ollama** (qwen2.5, llama3, etc.) |
+| Zep Cloud embeddings | **nomic-embed-text** via Ollama |
+| Cloud API keys required | **Zero cloud dependencies** |
+
+## Workflow
+
+1. **Graph Build** — Extracts entities (people, companies, events) and relationships from your document. Builds a knowledge graph with individual and group memory via Neo4j.
+2. **Env Setup** — Generates hundreds of agent personas, each with unique personality, opinion bias, reaction speed, influence level, and memory of past events.
+3. **Simulation** — Agents interact on simulated social platforms: posting, replying, arguing, shifting opinions. The system tracks sentiment evolution, topic propagation, and influence dynamics in real time.
+4. **Report** — A ReportAgent analyzes the post-simulation environment, interviews a focus group of agents, searches the knowledge graph for evidence, and generates a structured analysis.
+5. **Interaction** — Chat with any agent from the simulated world. Ask them why they posted what they posted. Full memory and personality persists.
+
+## Screenshot
+
+<div align="center">
+<img src="./static/image/mirofish-offline-screenshot.jpg" alt="MiroFish Offline — English UI" width="100%"/>
+</div>
+
+## Quick Start
+
+### Prerequisites
+
+- Docker & Docker Compose (recommended), **or**
+- Python 3.11+, Node.js 18+, Neo4j 5.15+, Ollama
+
+### Option A: Docker (easiest)
+
+```bash
+git clone https://github.com/nikmcfly/MiroFish-Offline.git
+cd MiroFish-Offline
+cp .env.example .env
+
+# Start all services (Neo4j, Ollama, MiroFish)
+docker compose up -d
+
+# Pull the required models into Ollama
+docker exec mirofish-ollama ollama pull qwen2.5:32b
+docker exec mirofish-ollama ollama pull nomic-embed-text
+```
+
+Open `http://localhost:3000` — that's it.
+
+### Option B: Manual
+
+**1. Start Neo4j**
+
+```bash
+docker run -d --name neo4j \
+  -p 7474:7474 -p 7687:7687 \
+  -e NEO4J_AUTH=neo4j/mirofish \
+  neo4j:5.15-community
+```
+
+**2. Start Ollama & pull models**
+
+```bash
+ollama serve &
+ollama pull qwen2.5:32b      # LLM (or qwen2.5:14b for less VRAM)
+ollama pull nomic-embed-text  # Embeddings (768d)
+```
+
+**3. Configure & run backend**
+
+```bash
+cp .env.example .env
+# Edit .env if your Neo4j/Ollama are on non-default ports
+
+cd backend
+pip install -r requirements.txt
+python run.py
+```
+
+**4. Run frontend**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
 
 ## Configuration
 
-### Environment Variables
-
-Create a `.env` file in the backend directory:
+All settings are in `.env` (copy from `.env.example`):
 
 ```bash
-# LLM Configuration
-LLM_API_KEY=your-api-key
-LLM_BASE_URL=http://localhost:11434/v1  # Ollama example
-LLM_MODEL_NAME=gemma:7b
+# LLM — points to local Ollama (OpenAI-compatible API)
+LLM_API_KEY=ollama
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL_NAME=qwen2.5:32b
 
-# Ollama-specific (optional)
-OLLAMA_NUM_CTX=8192  # Context window size (default: 8192)
+# Neo4j
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=mirofish
 
-# Backend
-DEBUG=False
-PORT=5000
+# Embeddings
+EMBEDDING_MODEL=nomic-embed-text
+EMBEDDING_BASE_URL=http://localhost:11434
 ```
 
-## Structured Output (JSON Schema)
-
-The backend supports JSON schema enforcement with intelligent routing between three implementation branches:
-
-### How It Works
-
-The `LLMClient.chat_json()` method automatically selects the best constrained decoding strategy:
-
-#### Rama A: Ollama Native Constrained Decoding
-- **When:** Provider is Ollama + JSON Schema is provided
-- **How:** Uses `/api/chat` endpoint with GBNF grammar
-- **Guarantee:** JSON output is constrained at token generation level
-- **Best for:** Local Ollama instances requiring maximum reliability
-
-#### Rama B: OpenAI-compatible JSON Schema
-- **When:** Provider is not Ollama + JSON Schema is provided
-- **How:** Uses `response_format` with `type: "json_schema"` and `strict: true`
-- **Guarantee:** Output strictly conforms to schema
-- **Best for:** OpenAI, Anthropic Claude API, and compatible services
-
-#### Rama C: JSON Object Mode Fallback
-- **When:** No JSON Schema is provided
-- **How:** Uses `response_format: {"type": "json_object"}`
-- **Guarantee:** Output is valid JSON (format not schema-constrained)
-- **Best for:** Backward compatibility with existing code
-
-### Usage Examples
-
-#### With JSON Schema (Rama A/B - Constrained)
-
-```python
-from app.utils.llm_client import LLMClient
-
-client = LLMClient()
-
-# Define your schema
-schema = {
-    "type": "object",
-    "properties": {
-        "name": {"type": "string"},
-        "age": {"type": "integer"},
-        "email": {"type": "string", "format": "email"}
-    },
-    "required": ["name", "age"]
-}
-
-# Call with schema - automatically routes to Rama A or B
-result = client.chat_json(
-    messages=[
-        {"role": "user", "content": "Extract person info: John Smith, 30 years old, john@example.com"}
-    ],
-    json_schema=schema,
-    temperature=0.3,
-    max_tokens=256
-)
-
-print(result)
-# Output: {"name": "John Smith", "age": 30, "email": "john@example.com"}
-```
-
-#### Without Schema (Rama C - Backward Compatible)
-
-```python
-# Existing code without schema continues to work
-result = client.chat_json(
-    messages=[
-        {"role": "user", "content": "Generate a JSON object with person data"}
-    ],
-    temperature=0.3,
-    max_tokens=256
-)
-# Returns valid JSON but not schema-constrained
-```
-
-#### Ontology Generation with Structured Output
-
-```python
-from app.services.ontology_generator import OntologyGenerator
-
-generator = OntologyGenerator(llm_client=client)
-
-result = generator.generate(
-    document_texts=["Your document text here..."],
-    simulation_requirement="Identify all entities and relationships"
-)
-
-# Returns structured ontology with guaranteed schema compliance
-```
-
-## API Endpoints
-
-### POST /api/graph/ontology/generate
-
-Generates knowledge graph ontology from provided documents.
-
-**Request:**
-```json
-{
-    "document_texts": ["Document 1 text", "Document 2 text"],
-    "simulation_requirement": "What entities and relationships to extract?"
-}
-```
-
-**Response:**
-```json
-{
-    "entity_types": [
-        {
-            "name": "Person",
-            "description": "A human entity",
-            "properties": ["name", "age"]
-        }
-    ],
-    "edge_types": [
-        {
-            "name": "works_for",
-            "source": "Person",
-            "target": "Organization"
-        }
-    ],
-    "analysis_summary": "Summary of the analysis..."
-}
-```
-
-## LLMClient Parameters
-
-### chat_json()
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `messages` | list | Required | Chat messages in OpenAI format |
-| `json_schema` | dict | None | JSON Schema for structured output enforcement |
-| `temperature` | float | 0.3 | Sampling temperature (0.0-1.0) |
-| `max_tokens` | int | 4096 | Maximum tokens to generate |
-
-### Routing Logic
-
-```python
-if json_schema and is_ollama():
-    # Rama A: Native Ollama constrained decoding
-    return _chat_json_native_ollama(...)
-elif json_schema:
-    # Rama B: OpenAI-compatible structured outputs
-    return _chat_json_openai_structured(...)
-else:
-    # Rama C: JSON object mode fallback
-    return chat(response_format={"type": "json_object"})
-```
-
-## Context Window Management
-
-For Ollama instances, the client automatically manages context window size:
-
-- Default context: 8192 tokens (configurable via `OLLAMA_NUM_CTX`)
-- Large documents are automatically truncated to `MAX_TEXT_LENGTH_FOR_LLM` (50,000 chars)
-- Prevents prompt truncation errors
-
-## Development
-
-### Running Tests
-
-```bash
-# Run specific test
-python backend/test_1_rama_a.py
-
-# Run all tests
-for test in backend/test_*.py; do
-    python "$test"
-done
-```
-
-### Test Coverage
-
-- **Test 1:** Rama A (Ollama native) ✓
-- **Test 2:** Rama B (OpenAI-compatible) ✓
-- **Test 3:** Rama C (Backward compatibility) ✓
-- **Test 4:** Error handling and defensive measures ✓
-- **Test 5:** Large context handling (>13k tokens) ✓
-- **Test 6:** Logging verification ✓
-- **Test 7:** Frontend integration ✓
+Works with any OpenAI-compatible API — swap Ollama for Claude, GPT, or any other provider by changing `LLM_BASE_URL` and `LLM_API_KEY`.
 
 ## Architecture
 
-### Project Structure
+This fork introduces a clean abstraction layer between the application and the graph database:
 
 ```
-backend/
-├── app/
-│   ├── utils/
-│   │   ├── llm_client.py          # LLM client with routing logic
-│   │   └── ...
-│   ├── services/
-│   │   ├── ontology_generator.py  # Ontology generation service
-│   │   └── ...
-│   ├── routes/
-│   │   └── ...
-│   └── config.py
-├── tests/
-│   ├── test_1_rama_a.py           # Rama A tests
-│   ├── test_2_rama_b.py           # Rama B tests
-│   └── ...
-└── README.md                       # This file
+┌─────────────────────────────────────────┐
+│              Flask API                   │
+│  graph.py  simulation.py  report.py     │
+└──────────────┬──────────────────────────┘
+               │ app.extensions['neo4j_storage']
+┌──────────────▼──────────────────────────┐
+│           Service Layer                  │
+│  EntityReader  GraphToolsService         │
+│  GraphMemoryUpdater  ReportAgent         │
+└──────────────┬──────────────────────────┘
+               │ storage: GraphStorage
+┌──────────────▼──────────────────────────┐
+│         GraphStorage (abstract)          │
+│              │                            │
+│    ┌─────────▼─────────┐                │
+│    │   Neo4jStorage     │                │
+│    │  ┌───────────────┐ │                │
+│    │  │ EmbeddingService│ ← Ollama       │
+│    │  │ NERExtractor   │ ← Ollama LLM   │
+│    │  │ SearchService  │ ← Hybrid search │
+│    │  └───────────────┘ │                │
+│    └───────────────────┘                │
+└─────────────────────────────────────────┘
+               │
+        ┌──────▼──────┐
+        │  Neo4j CE   │
+        │  5.15       │
+        └─────────────┘
 ```
 
-### Key Components
+**Key design decisions:**
 
-- **LLMClient**: Unified interface for all LLM providers with intelligent routing
-- **OntologyGenerator**: Service for generating knowledge graphs from documents
-- **Config**: Configuration management from environment variables
+- `GraphStorage` is an abstract interface — swap Neo4j for any other graph DB by implementing one class
+- Dependency injection via Flask `app.extensions` — no global singletons
+- Hybrid search: 0.7 × vector similarity + 0.3 × BM25 keyword search
+- Synchronous NER/RE extraction via local LLM (replaces Zep's async episodes)
+- All original dataclasses and LLM tools (InsightForge, Panorama, Agent Interviews) preserved
 
-## Troubleshooting
+## Hardware Requirements
 
-### ConnectionError to Ollama
+| Component | Minimum | Recommended |
+|---|---|---|
+| RAM | 16 GB | 32 GB |
+| VRAM (GPU) | 10 GB (14b model) | 24 GB (32b model) |
+| Disk | 20 GB | 50 GB |
+| CPU | 4 cores | 8+ cores |
 
-```
-Error: No se pudo conectar con Ollama: Connection refused
-```
+CPU-only mode works but is significantly slower for LLM inference. For lighter setups, use `qwen2.5:14b` or `qwen2.5:7b`.
 
-**Solution:** Ensure Ollama is running on the configured `LLM_BASE_URL`
+## Use Cases
 
-```bash
-# Start Ollama (local)
-ollama serve
+- **PR crisis testing** — simulate the public reaction to a press release before publishing
+- **Trading signal generation** — feed financial news and observe simulated market sentiment
+- **Policy impact analysis** — test draft regulations against simulated public response
+- **Creative experiments** — someone fed it a classical Chinese novel with a lost ending; the agents wrote a narratively consistent conclusion
 
-# Or verify remote connection
-curl http://100.123.212.63:11434/api/tags
-```
+## License
 
-### Invalid JSON Response
+AGPL-3.0 — same as the original MiroFish project. See [LICENSE](./LICENSE).
 
-```
-Error: Invalid JSON format from LLM
-```
+## Credits & Attribution
 
-**Solution:** 
-- If using Rama A/B: Verify schema is valid JSON Schema
-- If using Rama C: Ensure model supports JSON mode
-- Check model's JSON generation capability
+This is a modified fork of [MiroFish](https://github.com/666ghj/MiroFish) by [666ghj](https://github.com/666ghj), originally supported by [Shanda Group](https://www.shanda.com/). The simulation engine is powered by [OASIS](https://github.com/camel-ai/oasis) from the CAMEL-AI team.
 
-### Timeout Errors
-
-**Solution:** Increase timeout or `max_tokens`:
-
-```python
-client = LLMClient(timeout=900.0)  # 15 minutes
-result = client.chat_json(..., max_tokens=2048)
-```
-
-## Performance Notes
-
-- **Rama A (Ollama native):** Fastest, most reliable for local Ollama
-- **Rama B (OpenAI-compatible):** Slower API call but works remotely
-- **Rama C (Fallback):** Backward compatible but least reliable for JSON
-
-Choose Rama A when possible for best performance and reliability.
-
-## Related Documentation
-
-- [Structured Output Fix](../STRUCTURED_OUTPUT_FIX.md) - Implementation details
-- [Manual Testing Guide](./MANUAL_TESTING.md) - How to run tests manually
-- [Fase 3 Cleanup](./fase3.md) - Documentation and cleanup procedures
+**Modifications in this fork:**
+- Backend migrated from Zep Cloud to local Neo4j CE 5.15 + Ollama
+- Entire frontend translated from Chinese to English (20 files, 1,000+ strings)
+- All Zep references replaced with Neo4j across the UI
+- Rebranded to MiroFish Offline
